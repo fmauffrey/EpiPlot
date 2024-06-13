@@ -113,10 +113,9 @@ secure_app(language = "fr",
                                                     switchInput("ganttSampling", value = T, size = "small", onStatus = "success", offStatus = "danger"
                                                     )),
                                              
-                                             downloadBttn("ganttDlSVG", label = "Exporter", style = "minimal",
-                                                          icon=icon("download", class="sharp", lib = "font-awesome"), 
-                                                          color = "success", size="lg"))
-                                       )),
+                                             actionBttn("download_moves_button", label="Exporter", size="lg", style="gradient",
+                                                        icon=icon("download", class="sharp", lib = "font-awesome"))
+                                       ))),
                               
                               ########### Network tab
                               tabPanel("Réseau", icon = icon("circle-nodes"),

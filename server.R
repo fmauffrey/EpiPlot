@@ -67,6 +67,33 @@ server <- function(input, output, session) {
     updatePickerInput(session, "patientPicker", selected = patients)
   }
   
+  # Modal for choosing plot size before saving
+  observeEvent(input$download_moves_button, {
+    show_alert(
+      title = "Dimension du graphique",
+      html = TRUE,
+      width = "20%",
+      btn_labels = NA,
+      closeOnClickOutside=T,
+      text = tags$div(
+        sliderTextInput(
+          inputId = "plot_width",
+          label = "Largeur",
+          hide_min_max=T,
+          selected="4096",
+          choices = c("1024", "2048", "3072", "4096")
+        ),
+        sliderTextInput(
+          inputId = "plot_height",
+          label = "Hauteur", 
+          hide_min_max=T,
+          selected="2048",
+          choices = c("1024", "2048", "3072", "4096")
+        ),
+        downloadBttn("ganttDlSVG", label = "Exporter", style = "material-flat",
+                     ,size="lg")
+      ))})
+  
   # Load patient table ########################################################
   raw_data <- reactive({
     
@@ -512,8 +539,8 @@ server <- function(input, output, session) {
   },
   content = function(file){
     ggsave(file, moves_plot(), device = "svg",
-           width = 4096,
-           height = 2048,
+           width = as.numeric(input$plot_width),
+           height = as.numeric(input$plot_height),
            units = "px")
   })
 }
