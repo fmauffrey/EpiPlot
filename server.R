@@ -199,11 +199,10 @@ server <- function(input, output, session) {
     names(genotype_id) <- paste0(genotype_count_table$DLST, " (", genotype_count_table$Count ,")")
     
     # Update genotype picker widget
-    ordered_genotypes <- genotype_id[order(genotype_count_table$Count, decreasing = T)]
     updatePickerInput(session, "genotypePicker", 
-                      choices = ordered_genotypes,
-                      selected = ordered_genotypes[1],
-                      choicesOpt = list(style = rep("color:black;", length(ordered_genotypes))))
+                      choices = genotype_id,
+                      selected = genotype_id[1],
+                      choicesOpt = list(style = rep("color:black;", length(genotype_id))))
     
     return(table)
   })
