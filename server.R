@@ -396,8 +396,7 @@ server <- function(input, output, session) {
       network_colors <- hue_pal()(number_units)
     }
     
-    network_data <- generate_network_data2(time_unit = "hour", 
-                                          detailed_button = input$NetworkDetailed,
+    network_data <- generate_network_data(time_unit = "hour",
                                           table = table,
                                           network_unit = input$selectedUnit,
                                           colors_vector = network_colors,
