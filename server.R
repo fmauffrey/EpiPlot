@@ -4,6 +4,7 @@ server <- function(input, output, session) {
   # call the server part
   # check_credentials returns a function to authenticate users
   res_auth <- secure_server(
+    timeout = 120,
     check_credentials = check_credentials(credentials)
   )
   
