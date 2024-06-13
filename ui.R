@@ -127,10 +127,6 @@ secure_app(language = "fr",
                                          
                                          box(width = 12,
                                              column(width = 1,
-                                                    p("Liens détaillés", style="font-size:1.5vh; font-weight: bold"),
-                                                    switchInput("NetworkDetailed", value = T, size = "small", onStatus = "success", offStatus = "danger")
-                                             ),
-                                             column(width = 1,
                                                     p("Liens indirects", style="font-size:1.5vh; font-weight: bold"),
                                                     switchInput("IndirectLinks", value = F, size = "small", onStatus = "success", offStatus = "danger")
                                              ),
