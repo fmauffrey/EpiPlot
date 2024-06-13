@@ -221,12 +221,7 @@ generate_network_data2 <- function(time_unit, detailed_button, table,
     net_edges[net_edges$label=="0","width"] = 4
     net_edges[net_edges$label=="0","label"] = ""
     
-    # Extract indirect links as table (for network update)
-    # TO IMPROVE, can be directly done in the function
-    ind_edges <- net_edges[which(net_edges$dashes==TRUE),]
-    net_edges <- net_edges[-which(net_edges$dashes==TRUE),]
-    
-    return(list(net_nodes, net_edges, edges_colors, ind_edges))
+    return(list(net_nodes, net_edges, edges_colors))
   }
   
   # Return data

@@ -23,8 +23,14 @@ server <- function(input, output, session) {
   # Manual date range update buttons - Reset
   observeEvent(input$bttnDateFilterReset, {
     if (!is.null(input$Data_mouvements)){
-      min_date <- min(genotype_filtered_data()$Début_mouvement)
-      updateDateRangeInput(session, "DateRange", start=min_date)
+      min_date <- min(raw_data()$Début_mouvement)
+      max_date <- max(raw_data()$Fin_mouvement)
+      # The table loaded changes if sampling data loaded or not
+      if (is.null(input$Data_sampling)){
+        updateDateRangeInput(session, "DateRange", start=min_date-150000, end=max_date+150000)
+      } else {
+        updateDateRangeInput(session, "DateRange", start=min_date, end=max_date+150000)
+      }
     }
   })
   
@@ -390,7 +396,7 @@ server <- function(input, output, session) {
       network_colors <- hue_pal()(number_units)
     }
     
-    network_data <- generate_network_data(time_unit = "hour", 
+    network_data <- generate_network_data2(time_unit = "hour", 
                                           detailed_button = input$NetworkDetailed,
                                           table = table,
                                           network_unit = input$selectedUnit,
@@ -402,22 +408,14 @@ server <- function(input, output, session) {
     if (is.null(network_data))
       return(NULL)
     
-    if (input$NetworkDetailed == F){
-      visNetwork(network_data[[1]], network_data[[2]]) %>%
-        visPhysics(solver = "forceAtlas2Based") %>%
-        visInteraction(multiselect = T) %>% 
-        visNodes(color = list(background = "lightblue", 
-                              border = "darkblue")) %>%
-        visLayout(randomSeed = 32)
-    } else {
-      visNetwork(network_data[[1]], network_data[[2]]) %>%
-        visPhysics(solver = "forceAtlas2Based") %>%
-        visLegend(addEdges = network_data[[3]]) %>%
-        visInteraction(multiselect = T) %>% 
-        visNodes(color = list(background = "lightblue", 
-                              border = "darkblue")) %>%
-        visLayout(randomSeed = 32)
-    }
+    # Create network
+    visNetwork(network_data[[1]], network_data[[2]]) %>%
+      visPhysics(solver = "forceAtlas2Based") %>%
+      visLegend(addEdges = network_data[[3]]) %>%
+      visInteraction(multiselect = T) %>% 
+      visNodes(color = list(background = "lightblue", 
+                            border = "darkblue")) %>%
+      visLayout(randomSeed = 32)
   })
   
   # Wards plot ################################################################
