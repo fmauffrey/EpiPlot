@@ -1,0 +1,159 @@
+# Load required packages
+suppressPackageStartupMessages({
+  library(shiny)
+  library(shinyWidgets)
+  library(dplyr)
+  library(ggplot2)
+  library(forcats)
+  library(svglite)
+  library(shinydashboard)
+  library(plotly)
+  library(shinycssloaders)
+  library(lubridate)
+  library(GGally)
+  library(network)
+  library(sna)
+  library(scales)
+  library(readxl)
+  library(shinyalert)
+  library(plotrix)
+  library(shinyhelper)
+  library(visNetwork)
+  library(RColorBrewer)
+  library(stringr)
+  library(IRanges)
+  library(shinymanager)
+  source("functions.R")
+})
+
+#### Settings parameters #######
+# Loading animation
+options(spinner.type = 6)
+
+secure_app(language = "fr",
+  dashboardPage(skin = "green",
+                title = "Epiplot",
+                
+                # Header
+                dashboardHeader(title = span(img(src = "CHUV.png", height = 40), "Epiplot"),
+                                dropdownMenu(type="notifications", 
+                                             badgeStatus = NULL,
+                                             icon = icon("info"),
+                                             headerText = "Epiplot version 0.9.2",
+                                             notificationItem("florian.mauffrey@chuv.ch",
+                                                              icon = icon("envelope"),
+                                                              status = "info"))),
+  
+                # Side bar menu
+                dashboardSidebar(
+                  sidebarMenu(
+                    id = "SideBar",
+                    menuItem("Fichiers", icon = icon("file"),
+                             fileInput("Data_mouvements", "Table des mouvements", accept=c(".xls", ".xlsx"),
+                                       buttonLabel ="Parcourir...", placeholder = "Aucun fichier"),
+                             fileInput("Data_sampling", "Table des prélèvements", accept=c(".xls", ".xlsx"),
+                                       buttonLabel = "Parcourir...", placeholder = "Aucun fichier")
+                             ),
+                    menuItem("Paramètres", icon = icon("gears"),
+                             dateRangeInput("DateRange", "Dates", language = "fr-CH", weekstart = 1, separator = "à", format = "dd-mm-yyyy"),
+                             fluidRow(column(6, actionBttn("bttnDateFilter365", "Dernière année", style = "simple", color = "success", size = "xs"),
+                                             actionBttn("bttnDateFilterReset", "Reset", style = "simple", color = "success", size = "xs"))),
+                             pickerInput("genotypePicker", "Génotype", choices = "",
+                                         options = pickerOptions(title = "Aucune sélection", size = 10, liveSearch = T)),
+                             pickerInput("patientPicker", "Patients", choices = "",
+                                         multiple = TRUE, options = pickerOptions(title = "Aucune sélection", size = 10, actionsBox = T)),
+                             selectInput("selectedUnit", "Niveau", list("Unité de soins" = "Unité_de_soins",
+                                                                        "Unité fonctionelle" = "Unité_fonctionelle",
+                                                                        "Service" = "Service",
+                                                                        "Département" = "Département"))
+                             )
+                    )
+                  ),
+              
+                # Body
+                dashboardBody(
+                  
+                  ########## Logo for the browser tab
+                  tags$head(tags$link(rel = "shortcut icon", href = "logo.png")),
+                  
+                  tabsetPanel(type = "tabs",
+                              selected = "Table",
+                              ########## Table loading tab
+                              tabPanel("Table", icon = icon("table"),
+                                       uiOutput("table")
+                              ),
+                              
+                              ############# Gantt tab
+                              tabPanel("Mouvements", icon = icon("chart-gantt"),
+                                       fluidRow(
+                                         # Box with plot
+                                         box(width = 12, height = "65vh",
+                                             withSpinner(plotlyOutput("timeline", height="62vh"))),
+                                         
+                                         
+                                         
+                                         # Box with controls
+                                         box(width = 12, style='height:15vh',
+                                             column(width = 2,
+                                                    selectInput("ganttOrder", "Tri patients", list("Date d'admission" = "Début_mouvement", "IPP" = "IPP"), selected = "Début_mouvement")),
+                                             column(width = 2,
+                                                    selectInput("scaleType", "Unité de l'échelle", selected = "month", list("Jours" = "day",
+                                                                                                                            "Semaines" = "week",
+                                                                                                                            "Mois" = "month",
+                                                                                                                            "Semestre" = "semester",
+                                                                                                                            "Années" = "year"))),
+                                             column(width = 2,
+                                                    sliderInput(inputId = 'DotSize', label = 'Taille points', value = 3, min = 1, max = 10, ticks = F)
+                                             ),
+                                             column(width = 2,
+                                                    sliderInput(inputId = 'segmentSize', label = 'Taille barres', value = 4, min = 1, max = 20, ticks = F)
+                                             ),
+                                             column(width = 2,
+                                                    p("Ajouter les prélèvements", style="font-size:1.5vh; font-weight: bold"),
+                                                    switchInput("ganttSampling", value = T, size = "small", onStatus = "success", offStatus = "danger"
+                                                    )),
+                                             
+                                             downloadBttn("ganttDlSVG", label = "Exporter", style = "minimal",
+                                                          icon=icon("download", class="sharp", lib = "font-awesome"), 
+                                                          color = "success", size="lg"))
+                                       )),
+                              
+                              ########### Network tab
+                              tabPanel("Réseau", icon = icon("circle-nodes"),
+                                       fluidRow(
+                                         # Box with plot stats units
+                                         box(width = 12, height = "65vh",
+                                             withSpinner(visNetworkOutput("network", height="600px"))),
+                                         
+                                         box(width = 12,
+                                             column(width = 1,
+                                                    p("Liens détaillés", style="font-size:1.5vh; font-weight: bold"),
+                                                    switchInput("NetworkDetailed", value = T, size = "small", onStatus = "success", offStatus = "danger")
+                                             ),
+                                             column(width = 1,
+                                                    p("Liens indirects", style="font-size:1.5vh; font-weight: bold"),
+                                                    switchInput("IndirectLinks", value = F, size = "small", onStatus = "success", offStatus = "danger")
+                                             ),
+                                             column(width = 2,
+                                                    sliderInput(inputId = 'IndirectLinkTime', 
+                                                                label = "Jours d'écart pour un lien indirect", 
+                                                                value = 14, min = 1, max = 28, ticks = F)
+                                             ),
+                                             column(width = 2,
+                                                    actionBttn("getNodes", label = "Afficher les IPP sélectionnées",
+                                                               size = "md", style = "minimal", color = "success")
+                                             )
+                                         )
+                                       )
+                              ),
+                              # Box with controls
+                              
+                              
+                              ####### Statistics tab
+                              tabPanel("Statistiques", icon = icon("square-poll-vertical"),
+                                       fluidRow(box(width = 12,
+                                                    withSpinner(plotlyOutput("wards", height="65vh")))))
+                  )
+                )
+                )
+    )
