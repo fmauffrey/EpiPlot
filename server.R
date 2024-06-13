@@ -126,8 +126,10 @@ server <- function(input, output, session) {
                          end=max(table$Fin_mouvement)+150000)
     
     # Update patient picker widgets
-    updatePickerInput(session, "patientPicker", choices = levels(factor(table$IPP)),
-                      selected = levels(factor(table$IPP)))
+    patients_list <- levels(factor(table$IPP))
+    updatePickerInput(session, "patientPicker", choices = patients_list,
+                      selected = patients_list,
+                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
     
     return(table)
   })
@@ -218,8 +220,10 @@ server <- function(input, output, session) {
                          end=max(table$Fin_mouvement)+150000)
     
     # Update patient picker widgets
-    updatePickerInput(session, "patientPicker", choices = levels(factor(table$IPP)),
-                      selected = levels(factor(table$IPP)))
+    patients_list <- levels(factor(table$IPP))
+    updatePickerInput(session, "patientPicker", choices = patients_list,
+                      selected = patients_list,
+                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
 
     return(table)
   })
