@@ -398,8 +398,13 @@ server <- function(input, output, session) {
     }
     plot <- plot + scale_x_datetime(date_breaks = scale_axis)
     
-    # Legend
+    # Adapt legend title
     plot <- plot + labs(color=input$selectedUnit)
+    
+    # Highlight IPP selected in the selection box
+    selected_IPP <- c("3540971", "3552988")
+    selected_IPP.bold <- ifelse(levels(plot_data$IPP) %in% selected_IPP, yes = "bold", no = "plain")
+    plot <- plot + theme(axis.text.y = element_text(face = selected_IPP.bold))
     
     plot
   })
