@@ -232,6 +232,13 @@ server <- function(input, output, session) {
                       selected = genotype_id[1],
                       choicesOpt = list(style = rep("color:black;", length(genotype_id))))
     
+    # Add the sampling ordering choice in sorting widget
+    updateSelectInput(session, "ganttOrder",
+                      choices = list("Prélèvements" = "Prelevements",
+                                     "Admission" = "Début_mouvement", 
+                                     "IPP" = "IPP"),
+                      selected = "Prelevements")
+    
     return(table)
   })
   
@@ -277,11 +284,22 @@ server <- function(input, output, session) {
     
     # Changing samples order for plot
     order_var <- input$ganttOrder
+    new_order <- NA
     if (order_var == "IPP"){
-      filt_data$IPP <- factor(filt_data$IPP, levels = unique(sort(filt_data$IPP)))
+      new_order <- unique(sort(filt_data$IPP))
     } else if (order_var == "Début_mouvement") {
-      filt_data$IPP <- factor(filt_data$IPP, levels = unique(filt_data$IPP[order(filt_data$Début_mouvement)]))
+      new_order <-  unique(filt_data$IPP[order(filt_data$Début_mouvement)])
+    } else if (order_var == "Prelevements") {
+      sample_table <- sampling_data_plot()
+      sample_table_first_pos <- sample_table %>% 
+        dplyr::group_by(IPP) %>%
+        dplyr::filter(Prélèvements == "Positif") %>%
+        dplyr::filter(DATE_PRELEVEMENT == min(DATE_PRELEVEMENT)) %>%
+        dplyr::ungroup() %>%
+        dplyr::distinct()
+      new_order <- sample_table_first_pos$IPP[order(sample_table_first_pos$DATE_PRELEVEMENT)]
     }
+    filt_data$IPP <- factor(filt_data$IPP, levels = new_order)
 
     return(filt_data)
   })
