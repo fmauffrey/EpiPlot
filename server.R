@@ -401,18 +401,12 @@ server <- function(input, output, session) {
     # Adapt legend title
     plot <- plot + labs(color=input$selectedUnit)
     
-    # Highlight IPP selected in the selection box
-    selected_IPP <- c("3540971", "3552988")
-    selected_IPP.bold <- ifelse(levels(plot_data$IPP) %in% selected_IPP, yes = "bold", no = "plain")
-    plot <- plot + theme(axis.text.y = element_text(face = selected_IPP.bold))
-    
     plot
   })
   
   # Moves plot plotly display #################################################
   # Modification of the plotly object for the display in the window
   moves_plot_tab <- reactive({
-    plot_data <- as.data.frame(filtered_data())
     tab_plot <- ggplotly(moves_plot(),
                          tooltip = "text")
     
