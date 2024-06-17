@@ -10,14 +10,6 @@ generate_network_data <- function(time_unit, detailed_button, table,
   # Update the different factors levels with the currently selected data
   data <- droplevels(data)
   
-  # If there is only one patient, return nothing
-  if (length(levels(factor(data$IPP)))<2){
-    shinyalert(text=HTML("<p style='font-weight:bold; font-size:2vh'>Un seul patient sélectionné</p>"), 
-               type = "info", html = T, closeOnEsc = T, 
-               closeOnClickOutside = T, showConfirmButton = F)
-    return(NULL)
-  }
-  
   # Convert into edge list using IRanges
   connections <- data.frame()
   
@@ -84,52 +76,53 @@ generate_network_data <- function(time_unit, detailed_button, table,
     shinyalert(text=HTML("<p style='font-weight:bold; font-size:2vh'>Aucun lien entre ces patients</p>"), 
                type = "error", html = T, closeOnEsc = T, 
                closeOnClickOutside = T, showConfirmButton = F)
-    return(NULL)
   }
   
-  # Aggregate connections and count the occurrence (detailed)
-  net_edges <- connections
-  
-  # Prepare data for visNetwork
-  net_edges <- net_edges %>% mutate(from=as.character(from),
-                                    to=as.character(to),
-                                    label=as.character(label))
-  
+  # Creation of the nodes data
   nodes <- unique(data$IPP) # All IPP are considered
   net_nodes <- data_frame(id=1:length(nodes), label=as.character(nodes))
-  
-  net_edges$from <- match(net_edges$from, net_nodes$label, nomatch = 0)
-  net_edges$to <- match(net_edges$to, net_nodes$label, nomatch = 0)
-  
-  # Create dataframe for the legend
-  all_colors_levels <- levels(data[,network_unit])
-  edge_colors_code <- match(net_edges$color, all_colors_levels)
-  edges_colors <- data.frame(color=colors_vector[edge_colors_code],
-                             label=net_edges$color)
-  edges_colors <- edges_colors[!duplicated(edges_colors$color),]
-  edges_colors$width <- rep(10, nrow(edges_colors))
-  edges_colors$font.background <- rep("#ffffff", nrow(edges_colors))
-  edges_colors$arrows <- rep("NULL", nrow(edges_colors))
-  
-  # Add custom characteristics to nodes
   net_nodes$shape <- rep("circle", nrow(net_nodes))
   
-  # Add custom characteristics to edges
-  net_edges$width <- rescale(as.numeric(net_edges$label), c(2, 20))
-  net_edges$length <- rep(150, nrow(net_edges))
-  net_edges$color.color <- rep("#818281", nrow(net_edges))
-  net_edges$font.size <- rep(20, nrow(net_edges))
-  net_edges$font.background <- rep("#ffffff", nrow(net_edges))
-  net_edges$color <- colors_vector[edge_colors_code]
-  net_edges$dashes <- rep(FALSE, nrow(net_edges))
-  
-  if (indirect_button==T){
-    # Adapt indirect links
-    net_edges[net_edges$label=="0","dashes"] = TRUE
-    net_edges[net_edges$label=="0","width"] = 4
-    net_edges[net_edges$label=="0","label"] = ""
+  # Creation of the edges and color data if there is connections
+  if (nrow(connections)>0){
+    net_edges <- connections
     
-    return(list(net_nodes, net_edges, edges_colors))
+    # Prepare data for visNetwork
+    net_edges <- net_edges %>% mutate(from=as.character(from),
+                                      to=as.character(to),
+                                      label=as.character(label))
+    
+    net_edges$from <- match(net_edges$from, net_nodes$label, nomatch = 0)
+    net_edges$to <- match(net_edges$to, net_nodes$label, nomatch = 0)
+    
+    # Create dataframe for the legend
+    all_colors_levels <- levels(data[,network_unit])
+    edge_colors_code <- match(net_edges$color, all_colors_levels)
+    edges_colors <- data.frame(color=colors_vector[edge_colors_code],
+                               label=net_edges$color)
+    edges_colors <- edges_colors[!duplicated(edges_colors$color),]
+    edges_colors$width <- rep(10, nrow(edges_colors))
+    edges_colors$font.background <- rep("#ffffff", nrow(edges_colors))
+    edges_colors$arrows <- rep("NULL", nrow(edges_colors))
+    
+    # Add custom characteristics to edges
+    net_edges$width <- rescale(as.numeric(net_edges$label), c(2, 20))
+    net_edges$length <- rep(150, nrow(net_edges))
+    net_edges$color.color <- rep("#818281", nrow(net_edges))
+    net_edges$font.size <- rep(20, nrow(net_edges))
+    net_edges$font.background <- rep("#ffffff", nrow(net_edges))
+    net_edges$color <- colors_vector[edge_colors_code]
+    net_edges$dashes <- rep(FALSE, nrow(net_edges))
+    
+    if (indirect_button==T){
+      # Adapt indirect links
+      net_edges[net_edges$label=="0","dashes"] = TRUE
+      net_edges[net_edges$label=="0","width"] = 4
+      net_edges[net_edges$label=="0","label"] = ""
+    }
+  } else {
+    net_edges <- data.frame()
+    edges_colors <- data.frame()
   }
   
   # Return data
