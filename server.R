@@ -71,7 +71,7 @@ server <- function(input, output, session) {
   # Modal for choosing plot size before saving
   observeEvent(input$download_moves_button, {
     show_alert(
-      title = "Dimension du graphique",
+      title = "Choisir un format",
       html = TRUE,
       width = "20%",
       btn_labels = NA,
@@ -81,16 +81,22 @@ server <- function(input, output, session) {
           inputId = "plot_width",
           label = "Largeur",
           hide_min_max=T,
-          selected="4096",
-          choices = c("1024", "2048", "3072", "4096")
+          selected="1024",
+          choices = c("256", "512", "768", "1024", "2048")
         ),
         sliderTextInput(
           inputId = "plot_height",
           label = "Hauteur", 
           hide_min_max=T,
-          selected="2048",
-          choices = c("1024", "2048", "3072", "4096")
+          selected="512",
+          choices = c("256", "512", "768", "1024", "2048")
         ),
+        radioGroupButtons("moves_plot_format",
+                          choiceNames = c("SVG", "PNG"),
+                          choiceValues = c(".svg", ".png"),
+                          status = "primary",
+                          individual = T,
+                          size = "lg"),
         downloadBttn("ganttDlSVG", label = "Exporter", style = "material-flat",
                      ,size="lg")
       ))})
@@ -153,10 +159,13 @@ server <- function(input, output, session) {
     updateDateRangeInput(session, "DateRange", start=min(table$Début_mouvement)-150000, 
                          end=max(table$Fin_mouvement)+150000)
     
-    # Update patient picker widgets
+    # Update patient picker and selected patients widgets
     patients_list <- levels(factor(table$IPP))
     updatePickerInput(session, "patientPicker", choices = patients_list,
                       selected = patients_list,
+                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
+    updatePickerInput(session, "highlightPicker", choices = patients_list,
+                      selected = NA,
                       choicesOpt = list(style = rep("color:black;", length(patients_list))))
     
     return(table)
@@ -255,10 +264,13 @@ server <- function(input, output, session) {
     updateDateRangeInput(session, "DateRange", start=min(table$Début_mouvement)-150000, 
                          end=max(table$Fin_mouvement)+150000)
     
-    # Update patient picker widgets
+    # Update patient picker and highlighted patients widgets
     patients_list <- levels(factor(table$IPP))
     updatePickerInput(session, "patientPicker", choices = patients_list,
                       selected = patients_list,
+                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
+    updatePickerInput(session, "highlightPicker", choices = patients_list,
+                      selected = NA,
                       choicesOpt = list(style = rep("color:black;", length(patients_list))))
 
     return(table)
@@ -401,14 +413,21 @@ server <- function(input, output, session) {
     # Adapt legend title
     plot <- plot + labs(color=input$selectedUnit)
     
-    plot
-  })
-  
-  # Moves plot plotly display #################################################
-  # Modification of the plotly object for the display in the window
-  moves_plot_tab <- reactive({
-    tab_plot <- ggplotly(moves_plot(),
-                         tooltip = "text")
+    # Change font for selected patients
+    # Original IPP order is saved because gsub change factors for character and
+    # looses the order chosen before
+    initial_order <- levels(plot$data$IPP)
+    selected_patients <- input$highlightPicker
+    if (length(selected_patients)>0){
+      for (p in selected_patients){
+        plot$data$IPP <- gsub(p, paste0("<b>", p, "</b>"), plot$data$IPP)
+        initial_order <- gsub(p, paste0("<b>", p, "</b>"), initial_order)
+      }
+    }
+    plot$data$IPP <- factor(plot$data$IPP, levels=initial_order)
+    
+    # Convert to plotly object for displaying in the tab
+    tab_plot <- ggplotly(plot, tooltip = "text")
     
     # Change legend title
     tab_plot$x$layout$legend$title$text <- gsub("Prélèvements", "", tab_plot$x$layout$legend$title$text)
@@ -509,10 +528,10 @@ server <- function(input, output, session) {
     if (is.null(input$Data_mouvements))
       return(NULL)
     
-    moves_plot_tab() %>%
+    moves_plot() %>%
       
     # Modify plotly parameters to display
-      config(moves_plot_tab(),
+      config(moves_plot(),
              toImageButtonOptions= list(filename = paste0(as.character(input$genotypePicker),
                                                           "_",
                                                           format(Sys.time(), "%e-%m-%y"))),
@@ -550,15 +569,20 @@ server <- function(input, output, session) {
   # Saving buttons Gantt plot
   # For filename, a function is needed to reevaluate the genotype selected each time the button is pressed
   output$ganttDlSVG <- downloadHandler(filename = function(){
-    if (input$genotypePicker=="") "mouvement.svg" else paste0(as.character(input$genotypePicker),
-                                                              "_",
-                                                              format(Sys.time(), "%e-%m-%y"),
-                                                              ".svg")
+    if (input$genotypePicker=="") {
+      paste0("mouvement", input$moves_plot_format) 
+      } else {
+        paste0(as.character(input$genotypePicker), "_", format(Sys.time(), "%y%m%e"), input$moves_plot_format)}
   },
   content = function(file){
-    ggsave(file, moves_plot(), device = "svg",
-           width = as.numeric(input$plot_width),
-           height = as.numeric(input$plot_height),
-           units = "px")
+    temp_file <- tempfile(fileext = input$moves_plot_format)
+    
+    # Save the plot as an image to the temporary file (necessary for writing on server)
+    save_image(moves_plot(), temp_file,
+               width = input$plot_width,
+               height = input$plot_height)
+    
+    # Copy the temporary file to the final destination
+    file.copy(temp_file, file)
   })
 }

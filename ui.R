@@ -112,9 +112,11 @@ secure_app(language = "fr",
                                                     p("Ajouter les prélèvements", style="font-size:1.5vh; font-weight: bold"),
                                                     switchInput("ganttSampling", value = T, size = "small", onStatus = "success", offStatus = "danger"
                                                     )),
-                                             
+                                             column(width=2,
+                                                    pickerInput("highlightPicker", "Montrer patients", choices = "",
+                                                                multiple = TRUE, options = pickerOptions(title = "Aucune sélection", size = 10, actionsBox = T, liveSearch = T))),
                                              actionBttn("download_moves_button", label="Exporter", size="lg", style="gradient",
-                                                        icon=icon("download", class="sharp", lib = "font-awesome"))
+                                                        icon=icon("download", class="sharp", lib = "font-awesome")),
                                        ))),
                               
                               ########### Network tab
