@@ -97,7 +97,7 @@ server <- function(input, output, session) {
                           status = "primary",
                           individual = T,
                           size = "lg"),
-        downloadBttn("ganttDlSVG", label = "Exporter", style = "material-flat",
+        downloadBttn("ganttDl", label = "Exporter", style = "material-flat",
                      ,size="lg")
       ))})
   
@@ -422,6 +422,7 @@ server <- function(input, output, session) {
       for (p in selected_patients){
         plot$data$IPP <- gsub(p, paste0("<b>", p, "</b>"), plot$data$IPP)
         initial_order <- gsub(p, paste0("<b>", p, "</b>"), initial_order)
+        if (!is.null(input$Data_sampling)) plot$layers[[2]]$data$IPP <- gsub(p, paste0("<b>", p, "</b>"), plot$layers[[2]]$data$IPP)
       }
     }
     plot$data$IPP <- factor(plot$data$IPP, levels=initial_order)
@@ -568,7 +569,7 @@ server <- function(input, output, session) {
   
   # Saving buttons Gantt plot
   # For filename, a function is needed to reevaluate the genotype selected each time the button is pressed
-  output$ganttDlSVG <- downloadHandler(filename = function(){
+  output$ganttDl <- downloadHandler(filename = function(){
     if (input$genotypePicker=="") {
       paste0("mouvement", input$moves_plot_format) 
       } else {
