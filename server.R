@@ -386,7 +386,7 @@ server <- function(input, output, session) {
     }
     
     # Add sampling points if set
-    if (input$ganttSampling == TRUE & !is.null(input$Data_sampling)){
+    if (!is.null(input$Data_sampling)){
       # Import sampling data
       sampling_data <- sampling_data_plot()
       
