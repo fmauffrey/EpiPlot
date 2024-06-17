@@ -100,7 +100,7 @@ server <- function(input, output, session) {
         downloadBttn("ganttDl", label = "Exporter", style = "material-flat",
                      ,size="lg")
       ))})
-  
+
   # Load patient table ########################################################
   raw_data <- reactive({
     
