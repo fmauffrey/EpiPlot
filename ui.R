@@ -108,10 +108,6 @@ secure_app(language = "fr",
                                              column(width = 2,
                                                     sliderInput(inputId = 'segmentSize', label = 'Taille barres', value = 4, min = 1, max = 20, ticks = F)
                                              ),
-                                             column(width = 2,
-                                                    p("Ajouter les prélèvements", style="font-size:1.5vh; font-weight: bold"),
-                                                    switchInput("ganttSampling", value = T, size = "small", onStatus = "success", offStatus = "danger"
-                                                    )),
                                              column(width=2,
                                                     pickerInput("highlightPicker", "Montrer patients", choices = "",
                                                                 multiple = TRUE, options = pickerOptions(title = "Aucune sélection", size = 10, actionsBox = T, liveSearch = T))),
