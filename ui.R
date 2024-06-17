@@ -103,10 +103,10 @@ secure_app(language = "fr",
                                                                                                                             "Semestre" = "semester",
                                                                                                                             "Années" = "year"))),
                                              column(width = 2,
-                                                    sliderInput(inputId = 'DotSize', label = 'Taille points', value = 3, min = 1, max = 10, ticks = F)
+                                                    sliderInput(inputId = 'DotSize', label = 'Taille prélèvements', value = 3, min = 1, max = 10, ticks = F)
                                              ),
                                              column(width = 2,
-                                                    sliderInput(inputId = 'segmentSize', label = 'Taille barres', value = 4, min = 1, max = 20, ticks = F)
+                                                    sliderInput(inputId = 'segmentSize', label = 'Taille mouvements', value = 4, min = 1, max = 20, ticks = F)
                                              ),
                                              column(width=2,
                                                     pickerInput("highlightPicker", "Montrer patients", choices = "",
