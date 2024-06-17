@@ -93,11 +93,11 @@ secure_app(language = "fr",
                                          
                                          
                                          # Box with controls
-                                         box(width = 12, style='height:15vh',
+                                         box(width = 12,
                                              column(width = 2,
-                                                    selectInput("ganttOrder", "Tri patients", list("Date d'admission" = "Début_mouvement", "IPP" = "IPP"), selected = "Début_mouvement")),
+                                                    selectInput("ganttOrder", "Ordre", list("Date d'admission" = "Début_mouvement", "IPP" = "IPP"), selected = "Début_mouvement")),
                                              column(width = 2,
-                                                    selectInput("scaleType", "Unité de l'échelle", selected = "month", list("Jours" = "day",
+                                                    selectInput("scaleType", "Echelle", selected = "month", list("Jours" = "day",
                                                                                                                             "Semaines" = "week",
                                                                                                                             "Mois" = "month",
                                                                                                                             "Semestre" = "semester",
@@ -109,10 +109,11 @@ secure_app(language = "fr",
                                                     sliderInput(inputId = 'segmentSize', label = 'Taille mouvements', value = 4, min = 1, max = 20, ticks = F)
                                              ),
                                              column(width=2,
-                                                    pickerInput("highlightPicker", "Montrer patients", choices = "",
+                                                    pickerInput("highlightPicker", "Mettre en avant", choices = "",
                                                                 multiple = TRUE, options = pickerOptions(title = "Aucune sélection", size = 10, actionsBox = T, liveSearch = T))),
-                                             actionBttn("download_moves_button", label="Exporter", size="lg", style="gradient",
-                                                        icon=icon("download", class="sharp", lib = "font-awesome")),
+                                             column(width=2, div(style = "display: flex; justify-content: center;",
+                                                    actionBttn("download_moves_button", label=NULL, size="lg", style="gradient",
+                                                               icon=icon("download", class="sharp", lib = "font-awesome")))),
                                        ))),
                               
                               ########### Network tab
