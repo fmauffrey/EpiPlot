@@ -51,10 +51,11 @@ server <- function(input, output, session) {
     if (!is.null(input$network_selectedNodes)){
       selected_nodes <- input$network_selectedNodes
       nodes <- as.data.frame(generate_network_data(time_unit = "days", 
-                                                   detailed_button = input$NetworkDetailed,
                                                    table = filtered_data(),
                                                    network_unit = input$selectedUnit,
-                                                   colors_vector = colors_vector)[[1]])
+                                                   colors_vector = colors_vector,
+                                                   indirect_button = input$IndirectLinks,
+                                                   indirect_time = input$IndirectLinkTime)[[1]])
       selection <- nodes[selected_nodes,"label"]
       shinyalert(title="IPP", type="info", html = T, closeOnClickOutside=T, 
                  showConfirmButton=T, confirmButtonText="Filtrer ces IPP",
@@ -309,7 +310,8 @@ server <- function(input, output, session) {
         dplyr::filter(DATE_PRELEVEMENT == min(DATE_PRELEVEMENT)) %>%
         dplyr::ungroup() %>%
         dplyr::distinct()
-      new_order <- sample_table_first_pos$IPP[order(sample_table_first_pos$DATE_PRELEVEMENT)]
+      no_pos <- setdiff(sample_table$IPP, sample_table_first_pos$IPP)
+      new_order <- c(sample_table_first_pos$IPP[order(sample_table_first_pos$DATE_PRELEVEMENT)], no_pos)
     }
     filt_data$IPP <- factor(filt_data$IPP, levels = new_order)
 
@@ -334,8 +336,9 @@ server <- function(input, output, session) {
     table_samp[table_samp$Prélèvements=="POSITIVE","Prélèvements"] <- "Positif"
     table_samp[table_samp$Prélèvements=="NEGATIVE","Prélèvements"] <- "Négatif"
     
-    # Filter by genotype
-    table_samp <- table_samp[grep(input$genotypePicker, table_samp$CLUSTER),]
+    # Filter by genotype (spurtious spaces removed before grep CORRECT ERROR SOURCE)
+    selected_gentotype <- gsub(" ", "", input$genotypePicker)
+    table_samp <- table_samp[grep(selected_gentotype, table_samp$CLUSTER),]
     
     # Filter by date
     table_samp <- table_samp[(which(table_samp$DATE_PRELEVEMENT>=as.POSIXct(input$DateRange[1]))),]

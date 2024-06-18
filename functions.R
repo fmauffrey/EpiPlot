@@ -71,13 +71,6 @@ generate_network_data <- function(time_unit, detailed_button, table,
     }
   }
   
-  # If there is no connections, return nothing
-  if (nrow(connections)<1){
-    shinyalert(text=HTML("<p style='font-weight:bold; font-size:2vh'>Aucun lien entre ces patients</p>"), 
-               type = "error", html = T, closeOnEsc = T, 
-               closeOnClickOutside = T, showConfirmButton = F)
-  }
-  
   # Creation of the nodes data
   nodes <- unique(data$IPP) # All IPP are considered
   net_nodes <- data_frame(id=1:length(nodes), label=as.character(nodes))
