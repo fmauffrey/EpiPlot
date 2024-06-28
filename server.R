@@ -47,6 +47,7 @@ server <- function(input, output, session) {
     selectedNodes(input$network_selectedNodes)
   })
   
+
   observeEvent(selectedNodes(), {
     if (!is.null(input$network_selectedNodes)){
       selected_nodes <- input$network_selectedNodes
@@ -100,7 +101,8 @@ server <- function(input, output, session) {
                      ,size="lg")
       ))})
   
-  observeEvent(input$update_edges, {
+  # Add indirect links on network
+  observeEvent(input$update_edges_button, {
 
     if (!is.null(input$Data_mouvements)){
       # Import table
@@ -124,12 +126,12 @@ server <- function(input, output, session) {
         visUpdateEdges(edges = network_data[[4]])
       
       # Disabling the add indirect links button
-      disable("update_edges")
+      disable("update_edges_button")
       }
     })
   
-  # Remove all indirect links
-  observeEvent(input$remove_edges, {
+  # Remove all indirect links on network
+  observeEvent(input$remove_edges_button, {
     visNetworkProxy("network") %>%
       visGetEdges(input = "network_edges_remove")
   })
@@ -141,8 +143,19 @@ server <- function(input, output, session) {
       visRemoveEdges(id = edges_to_remove)
     
     # Reactivate the adding indirect links button
-    enable("update_edges")
+    enable("update_edges_button")
     })
+  
+  # Enable/disable selection focus on network
+  observeEvent(input$network_focus_trigger, {
+    if (input$network_focus_trigger == TRUE){
+      visNetworkProxy("network") %>%
+        visOptions(highlightNearest = list(enabled = TRUE))
+    } else {
+      visNetworkProxy("network") %>%
+        visOptions(highlightNearest = list(enabled = FALSE))
+    }
+  })
   
   # Load patient table ########################################################
   raw_data <- reactive({

@@ -137,7 +137,11 @@ secure_app(language = "fr",
                                                     style = "display: flex; flex-direction: column; gap: 10px;")),
                                              column(width = 2,
                                                     actionBttn("getNodes", label = "Afficher les IPP sélectionnées",
-                                                               size = "md", style = "minimal", color = "success"))
+                                                               size = "md", style = "minimal", color = "success")),
+                                             column(width = 2,
+                                                    prettySwitch("network_focus_trigger", label = "Focus",
+                                                                 value = TRUE, status = "success", slim = TRUE)
+                                                    )
                                              )
                                          )
                                        )
