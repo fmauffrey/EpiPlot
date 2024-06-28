@@ -102,30 +102,31 @@ server <- function(input, output, session) {
   
   observeEvent(input$update_edges, {
 
-    # Import table
-    table <- filtered_data()
-    number_units <- length(levels(factor(table[,input$selectedUnit])))
-    
-    # Define colors depending on the number of different units
-    if (number_units <= 15){
-      network_colors <- colors_vector
-    } else {
-      network_colors <- hue_pal()(number_units)
-    }
-    
-    network_data <- generate_network_data(time_unit = "hour",
-                                          table = table,
-                                          network_unit = input$selectedUnit,
-                                          colors_vector = network_colors,
-                                          indirect_time = input$IndirectLinkTime)
-
-    visNetworkProxy("network") %>%
-      visUpdateEdges(edges = network_data[[4]])
+    if (!is.null(input$Data_mouvements)){
+      # Import table
+      table <- filtered_data()
+      number_units <- length(levels(factor(table[,input$selectedUnit])))
       
-    # Disabling the add indirect links button
-    disable("update_edges")
-
-  })
+      # Define colors depending on the number of different units
+      if (number_units <= 15){
+        network_colors <- colors_vector
+      } else {
+        network_colors <- hue_pal()(number_units)
+      }
+      
+      network_data <- generate_network_data(time_unit = "hour",
+                                            table = table,
+                                            network_unit = input$selectedUnit,
+                                            colors_vector = network_colors,
+                                            indirect_time = input$IndirectLinkTime)
+      
+      visNetworkProxy("network") %>%
+        visUpdateEdges(edges = network_data[[4]])
+      
+      # Disabling the add indirect links button
+      disable("update_edges")
+      }
+    })
   
   # Remove all indirect links
   observeEvent(input$remove_edges, {
