@@ -146,25 +146,6 @@ filter_by_date <- function(table, start, end){
   }
 }
 
-wards_plot_data <- function(table, unit_selected){
-  # Create the plot data table with stats for each ward
-  ward_data <- data.frame()
-  for (ward in levels(factor(table[,unit_selected]))){
-    subtable <- table[table[,unit_selected]==ward,]
-    patients <- length(levels(factor(subtable$IPP)))
-    time <- round(as.numeric(sum(subtable$Fin_mouvement - subtable$Début_mouvement))/patients,1)
-    ward_data <- rbind.data.frame(ward_data, c(ward, time, patients))
-  }
-  colnames(ward_data) <- c("Ward", "Days", "Patients")
-  ward_data$Days <- as.numeric(ward_data$Days)
-  
-  # Reorder and add label position relative to the plot dimension
-  ward_data$Ward <- factor(ward_data$Ward, levels = ward_data$Ward[order(ward_data$Days, decreasing = T)])
-  ward_data$label_pos <- ward_data$Days + (max(ward_data$Days)*0.02)
-  
-  return(ward_data)
-}
-
 genotype_count_table <- function(table){
   # Return a table with the count of each DLST
   

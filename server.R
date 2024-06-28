@@ -526,43 +526,6 @@ server <- function(input, output, session) {
       visLayout(randomSeed = 32)
   })
   
-  # Wards plot ################################################################
-  wards_plot <- reactive({
-    
-    # Load the filtered table
-    table <- as.data.frame(filtered_data())
-    
-    # Unit selected
-    unit_selected <- input$selectedUnit
-    
-    # Generate plot data
-    ward_data <- wards_plot_data(table, unit_selected)
-    
-    # Base plot
-    plot <- ggplot(ward_data, aes(x=Ward, y=Days, fill=Ward)) +
-      geom_bar(stat="identity") +
-      theme_minimal() +
-      geom_text(aes(y = label_pos,
-                    label=paste(Patients, "patient(s)"))) +
-      theme(legend.position = "none") +
-      labs(x=NULL, y="Nombre de jours (moyenne)") +
-      ggtitle("Temps d'occupation moyen par unité")
-    
-    # Change colors depending on the number of wards
-    base_color <- hue_pal()(length(levels(as.factor(ward_data$Ward))))
-    other_color <- colors_vector[1:nrow(ward_data)]
-    
-    if (length(levels(ward_data$Ward)) <= 15){
-      new_colors <- other_color[order(ward_data$Days, decreasing = T)]
-      plot <- plot + scale_fill_manual(values=new_colors) 
-    } else {
-      new_colors <- base_color[order(ward_data$Days, decreasing = T)]
-      plot <- plot + scale_fill_manual(values=new_colors) 
-    }
-    
-    plot
-  })
-  
   # Display moves if table loaded
   output$timeline <- renderPlotly({
     if (is.null(input$Data_mouvements))
@@ -594,16 +557,6 @@ server <- function(input, output, session) {
                                        lengthChange = F,
                                        searching = F
                         )))
-  })
-  
-  # Display wards barplot
-  output$wards <- renderPlotly({
-    
-    # Return nothing if no data loaded
-    if (is.null(input$Data_mouvements))
-      return(NULL)
-    
-    wards_plot()
   })
   
   # Saving buttons Gantt plot

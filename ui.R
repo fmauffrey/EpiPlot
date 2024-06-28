@@ -68,8 +68,7 @@ secure_app(language = "fr",
                                                                         "Service" = "Service",
                                                                         "Département" = "Département"))
                              )
-                    )
-                  ),
+                    )),
               
                 # Body
                 dashboardBody(
@@ -139,17 +138,7 @@ secure_app(language = "fr",
                                              column(width = 2,
                                                     actionBttn("getNodes", label = "Afficher les IPP sélectionnées",
                                                                size = "md", style = "minimal", color = "success"))
+                                             )
                                          )
                                        )
-                              ),
-                              # Box with controls
-                              
-                              
-                              ####### Statistics tab
-                              tabPanel("Statistiques", icon = icon("square-poll-vertical"),
-                                       fluidRow(box(width = 12,
-                                                    withSpinner(plotlyOutput("wards", height="65vh")))))
-                  )
-                )
-                )
-    )
+                              ))))
