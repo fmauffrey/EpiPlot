@@ -522,8 +522,11 @@ server <- function(input, output, session) {
       visLegend(addEdges = network_data[[3]]) %>%
       visInteraction(multiselect = T) %>% 
       visNodes(color = list(background = "lightblue", 
-                            border = "darkblue")) %>%
-      visLayout(randomSeed = 32)
+                            border = "darkblue",
+                            highlight = c(background = "#f57f7f",
+                                          border = "darkred"))) %>%
+      visLayout(randomSeed = 32) %>%
+      visOptions(highlightNearest = list(enabled = TRUE))
   })
   
   # Display moves if table loaded
@@ -552,7 +555,7 @@ server <- function(input, output, session) {
     
     table <- filtered_data()
     
-    # Formating table before displaying
+    # Formatting table before displaying
     table <- table %>% mutate(Début_mouvement = format(Début_mouvement, "%Y-%m-%d %H:%M:%S"),
                               Fin_mouvement = format(Fin_mouvement, "%Y-%m-%d %H:%M:%S"))
     colnames(table) <- gsub("_", " ", colnames(table))
