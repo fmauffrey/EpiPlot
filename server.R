@@ -53,9 +53,7 @@ server <- function(input, output, session) {
       nodes <- as.data.frame(generate_network_data(time_unit = "days", 
                                                    table = filtered_data(),
                                                    network_unit = input$selectedUnit,
-                                                   colors_vector = colors_vector,
-                                                   indirect_button = input$IndirectLinks,
-                                                   indirect_time = input$IndirectLinkTime)[[1]])
+                                                   colors_vector = colors_vector)[[1]])
       selection <- nodes[selected_nodes,"label"]
       shinyalert(title="IPP", type="info", html = T, closeOnClickOutside=T, 
                  showConfirmButton=T, confirmButtonText="Filtrer ces IPP",
@@ -101,7 +99,50 @@ server <- function(input, output, session) {
         downloadBttn("ganttDl", label = "Exporter", style = "material-flat",
                      ,size="lg")
       ))})
+  
+  observeEvent(input$update_edges, {
 
+    # Import table
+    table <- filtered_data()
+    number_units <- length(levels(factor(table[,input$selectedUnit])))
+    
+    # Define colors depending on the number of different units
+    if (number_units <= 15){
+      network_colors <- colors_vector
+    } else {
+      network_colors <- hue_pal()(number_units)
+    }
+    
+    network_data <- generate_network_data(time_unit = "hour",
+                                          table = table,
+                                          network_unit = input$selectedUnit,
+                                          colors_vector = network_colors,
+                                          indirect_time = input$IndirectLinkTime)
+
+    visNetworkProxy("network") %>%
+      visUpdateEdges(edges = network_data[[4]])
+      
+    # Disabling the add indirect links button
+    disable("update_edges")
+
+  })
+  
+  # Remove all indirect links
+  observeEvent(input$remove_edges, {
+    visNetworkProxy("network") %>%
+      visGetEdges(input = "network_edges_remove")
+  })
+  
+  observeEvent(input$network_edges_remove, {
+    current_edges <- nested_list_to_df(input$network_edges_remove)
+    edges_to_remove <- current_edges[which(current_edges$dashes==TRUE),"id"]
+    visNetworkProxy("network") %>%
+      visRemoveEdges(id = edges_to_remove)
+    
+    # Reactivate the adding indirect links button
+    enable("update_edges")
+    })
+  
   # Load patient table ########################################################
   raw_data <- reactive({
     
@@ -472,14 +513,8 @@ server <- function(input, output, session) {
     network_data <- generate_network_data(time_unit = "hour",
                                           table = table,
                                           network_unit = input$selectedUnit,
-                                          colors_vector = network_colors,
-                                          indirect_button = input$IndirectLinks,
-                                          indirect_time = input$IndirectLinkTime)
-
-    # Return nothing if no link
-    if (is.null(network_data))
-      return(NULL)
-    
+                                          colors_vector = network_colors)
+  
     # Create network
     visNetwork(network_data[[1]], network_data[[2]]) %>%
       visPhysics(solver = "forceAtlas2Based") %>%

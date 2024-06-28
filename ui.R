@@ -23,6 +23,7 @@ suppressPackageStartupMessages({
   library(stringr)
   library(IRanges)
   library(shinymanager)
+  library(shinyjs)
   source("functions.R")
 })
 
@@ -119,18 +120,20 @@ secure_app(language = "fr",
                               ########### Network tab
                               tabPanel("Réseau", icon = icon("circle-nodes"),
                                        fluidRow(
+                                         # Activate shinyjs for disabling button
+                                         useShinyjs(),
                                          # Box with plot stats units
                                          box(width = 12, height = "65vh",
                                              withSpinner(visNetworkOutput("network", height="600px"))),
                                          
-                                         box(width = 12,
-                                             column(width = 1,
-                                                    p("Liens indirects", style="font-size:1.5vh; font-weight: bold"),
-                                                    switchInput("IndirectLinks", value = F, size = "small", onStatus = "success", offStatus = "danger")),
+                                         box(width = 12, height = "25vh",
                                              column(width = 2,
                                                     sliderInput(inputId = 'IndirectLinkTime', 
                                                                 label = "Jours d'écart pour un lien indirect", 
                                                                 value = 14, min = 1, max = 28, ticks = F)),
+                                             column(width = 2,
+                                                    actionBttn("update_edges", "Ajouter"),
+                                                    actionBttn("remove_edges", "Enlever")),
                                              column(width = 2,
                                                     actionBttn("getNodes", label = "Afficher les IPP sélectionnées",
                                                                size = "md", style = "minimal", color = "success"))

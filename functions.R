@@ -1,5 +1,5 @@
 generate_network_data <- function(time_unit, detailed_button, table, 
-                                  network_unit, colors_vector, indirect_button=T,
+                                  network_unit, colors_vector, 
                                   indirect_time=14){
   # Generate network data for plotting or extracting label info on selected
   
@@ -35,9 +35,7 @@ generate_network_data <- function(time_unit, detailed_button, table,
     }
   }
   
-  # Add indirect links if activated
-  if (indirect_button == T){
-    
+  # Create indirect links table
     data$Fin_mouvement <- data$Fin_mouvement + days(indirect_time)
     
     for (unit in levels(factor(data[,network_unit]))){
@@ -69,15 +67,14 @@ generate_network_data <- function(time_unit, detailed_button, table,
         }
       }
     }
-  }
-  
+
   # Creation of the nodes data
   nodes <- unique(data$IPP) # All IPP are considered
   net_nodes <- data_frame(id=1:length(nodes), label=as.character(nodes))
   net_nodes$shape <- rep("circle", nrow(net_nodes))
   
   # Creation of the edges and color data if there is connections
-  if (nrow(connections)>0){
+  if (nrow(connections) > 0){
     net_edges <- connections
     
     # Prepare data for visNetwork
@@ -97,7 +94,7 @@ generate_network_data <- function(time_unit, detailed_button, table,
     edges_colors$width <- rep(10, nrow(edges_colors))
     edges_colors$font.background <- rep("#ffffff", nrow(edges_colors))
     edges_colors$arrows <- rep("NULL", nrow(edges_colors))
-    
+
     # Add custom characteristics to edges
     net_edges$width <- rescale(as.numeric(net_edges$label), c(2, 20))
     net_edges$length <- rep(150, nrow(net_edges))
@@ -106,20 +103,26 @@ generate_network_data <- function(time_unit, detailed_button, table,
     net_edges$font.background <- rep("#ffffff", nrow(net_edges))
     net_edges$color <- colors_vector[edge_colors_code]
     net_edges$dashes <- rep(FALSE, nrow(net_edges))
-    
-    if (indirect_button==T){
-      # Adapt indirect links
+
+    if (length(net_edges$label=="0") > 0){
+      # Adapt indirect links if present
       net_edges[net_edges$label=="0","dashes"] = TRUE
       net_edges[net_edges$label=="0","width"] = 4
       net_edges[net_edges$label=="0","label"] = ""
     }
+
+    # Split the direct links and indirect links into 2 tables
+    net_edges_indirect <- net_edges[net_edges$label=="",]
+    net_edges <- net_edges[net_edges$label!="",]
+
   } else {
     net_edges <- data.frame()
     edges_colors <- data.frame()
+    net_edges_indirect <- data.frame()
   }
-  
+
   # Return data
-  return(list(net_nodes, net_edges, edges_colors))
+  return(list(net_nodes, net_edges, edges_colors, net_edges_indirect))
 }
 
 filter_by_date <- function(table, start, end){
@@ -171,4 +174,34 @@ genotype_count_table <- function(table){
   colnames(ST_count) <- c("DLST", "Count")
   
   return(ST_count)
+}
+
+# Define a function to convert a nested list to a data frame
+nested_list_to_df <- function(nested_list) {
+  # Initialize an empty list to store data frame rows
+  rows <- list()
+  
+  # Iterate over each element in the nested list
+  for (id in names(nested_list)) {
+    item <- nested_list[[id]]
+    # Flatten the nested structure into a single-level named list
+    row <- list(
+      from = item$from,
+      to = item$to,
+      label = item$label,
+      color = item$color,
+      width = item$width,
+      length = item$length,
+      font_size = item$font$size,
+      font_background = item$font$background,
+      dashes = item$dashes,
+      id = item$id
+    )
+    # Add the flattened row to the list of rows
+    rows <- append(rows, list(row))
+  }
+  
+  # Combine all rows into a single data frame
+  df <- do.call(rbind, lapply(rows, as.data.frame))
+  return(df)
 }
