@@ -551,12 +551,20 @@ server <- function(input, output, session) {
       return(NULL)
     
     table <- filtered_data()
+    
+    # Formating table before displaying
+    table <- table %>% mutate(Début_mouvement = format(Début_mouvement, "%Y-%m-%d %H:%M:%S"),
+                              Fin_mouvement = format(Fin_mouvement, "%Y-%m-%d %H:%M:%S"))
+    colnames(table) <- gsub("_", " ", colnames(table))
+    
     box(width = NULL,
         DT::renderDT(table,
-                        options = list(pageLength = 18,
-                                       lengthChange = F,
-                                       searching = F
-                        )))
+                     options = list(pageLength = 18,
+                                    lengthChange = F,
+                                    searching = F
+                                    )
+                     )
+        )
   })
   
   # Saving buttons Gantt plot
