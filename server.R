@@ -539,7 +539,12 @@ server <- function(input, output, session) {
                             highlight = c(background = "#f57f7f",
                                           border = "darkred"))) %>%
       visLayout(randomSeed = 32) %>%
-      visOptions(highlightNearest = list(enabled = TRUE))
+      visOptions(highlightNearest = list(enabled = TRUE)) %>%
+      visExport(type = "png", label = "Exporter",
+                name = paste0(as.character(input$genotypePicker), "_reseau_", 
+                              format(Sys.time(), 
+                                     "%y%m%e"), input$moves_plot_format),
+                style = "")
   })
   
   # Display moves if table loaded

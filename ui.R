@@ -113,7 +113,7 @@ secure_app(language = "fr",
                                                                 multiple = TRUE, options = pickerOptions(title = "Aucune sélection", size = 10, actionsBox = T, liveSearch = T))),
                                              column(width=2, div(style = "display: flex; justify-content: center;",
                                                     actionBttn("download_moves_button", label=NULL, size="lg", style="gradient",
-                                                               icon=icon("download", class="sharp", lib = "font-awesome")))),
+                                                               icon=icon("download", class="sharp", lib = "font-awesome"))))
                                        ))),
                               
                               ########### Network tab
