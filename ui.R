@@ -23,6 +23,7 @@ suppressPackageStartupMessages({
   library(stringr)
   library(IRanges)
   library(shinymanager)
+  library(shinyjs)
   source("functions.R")
 })
 
@@ -67,8 +68,7 @@ secure_app(language = "fr",
                                                                         "Service" = "Service",
                                                                         "Département" = "Département"))
                              )
-                    )
-                  ),
+                    )),
               
                 # Body
                 dashboardBody(
@@ -113,38 +113,36 @@ secure_app(language = "fr",
                                                                 multiple = TRUE, options = pickerOptions(title = "Aucune sélection", size = 10, actionsBox = T, liveSearch = T))),
                                              column(width=2, div(style = "display: flex; justify-content: center;",
                                                     actionBttn("download_moves_button", label=NULL, size="lg", style="gradient",
-                                                               icon=icon("download", class="sharp", lib = "font-awesome")))),
+                                                               icon=icon("download", class="sharp", lib = "font-awesome"))))
                                        ))),
                               
                               ########### Network tab
                               tabPanel("Réseau", icon = icon("circle-nodes"),
                                        fluidRow(
+                                         # Activate shinyjs for disabling button
+                                         useShinyjs(),
                                          # Box with plot stats units
                                          box(width = 12, height = "65vh",
                                              withSpinner(visNetworkOutput("network", height="600px"))),
                                          
-                                         box(width = 12,
-                                             column(width = 1,
-                                                    p("Liens indirects", style="font-size:1.5vh; font-weight: bold"),
-                                                    switchInput("IndirectLinks", value = F, size = "small", onStatus = "success", offStatus = "danger")),
+                                         box(width = 12, 
                                              column(width = 2,
                                                     sliderInput(inputId = 'IndirectLinkTime', 
                                                                 label = "Jours d'écart pour un lien indirect", 
                                                                 value = 14, min = 1, max = 28, ticks = F)),
+                                             column(width = 1,
+                                                    div(
+                                                    actionBttn("update_edges_button", label = "Ajouter", size = "sm"),
+                                                    actionBttn("remove_edges_button", label= "Enlever", size = "sm"),
+                                                    style = "display: flex; flex-direction: column; gap: 10px;")),
                                              column(width = 2,
                                                     actionBttn("getNodes", label = "Afficher les IPP sélectionnées",
-                                                               size = "md", style = "minimal", color = "success"))
+                                                               size = "md", style = "minimal", color = "success")),
+                                             column(width = 2,
+                                                    prettySwitch("network_focus_trigger", label = "Focus",
+                                                                 value = TRUE, status = "success", slim = TRUE)
+                                                    )
+                                             )
                                          )
                                        )
-                              ),
-                              # Box with controls
-                              
-                              
-                              ####### Statistics tab
-                              tabPanel("Statistiques", icon = icon("square-poll-vertical"),
-                                       fluidRow(box(width = 12,
-                                                    withSpinner(plotlyOutput("wards", height="65vh")))))
-                  )
-                )
-                )
-    )
+                              ))))

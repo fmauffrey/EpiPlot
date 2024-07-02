@@ -47,15 +47,14 @@ server <- function(input, output, session) {
     selectedNodes(input$network_selectedNodes)
   })
   
+
   observeEvent(selectedNodes(), {
     if (!is.null(input$network_selectedNodes)){
       selected_nodes <- input$network_selectedNodes
       nodes <- as.data.frame(generate_network_data(time_unit = "days", 
                                                    table = filtered_data(),
                                                    network_unit = input$selectedUnit,
-                                                   colors_vector = colors_vector,
-                                                   indirect_button = input$IndirectLinks,
-                                                   indirect_time = input$IndirectLinkTime)[[1]])
+                                                   colors_vector = colors_vector)[[1]])
       selection <- nodes[selected_nodes,"label"]
       shinyalert(title="IPP", type="info", html = T, closeOnClickOutside=T, 
                  showConfirmButton=T, confirmButtonText="Filtrer ces IPP",
@@ -101,7 +100,63 @@ server <- function(input, output, session) {
         downloadBttn("ganttDl", label = "Exporter", style = "material-flat",
                      ,size="lg")
       ))})
+  
+  # Add indirect links on network
+  observeEvent(input$update_edges_button, {
 
+    if (!is.null(input$Data_mouvements)){
+      # Import table
+      table <- filtered_data()
+      number_units <- length(levels(factor(table[,input$selectedUnit])))
+      
+      # Define colors depending on the number of different units
+      if (number_units <= 15){
+        network_colors <- colors_vector
+      } else {
+        network_colors <- hue_pal()(number_units)
+      }
+      
+      network_data <- generate_network_data(time_unit = "hour",
+                                            table = table,
+                                            network_unit = input$selectedUnit,
+                                            colors_vector = network_colors,
+                                            indirect_time = input$IndirectLinkTime)
+      
+      visNetworkProxy("network") %>%
+        visUpdateEdges(edges = network_data[[4]])
+      
+      # Disabling the add indirect links button
+      disable("update_edges_button")
+      }
+    })
+  
+  # Remove all indirect links on network
+  observeEvent(input$remove_edges_button, {
+    visNetworkProxy("network") %>%
+      visGetEdges(input = "network_edges_remove")
+  })
+  
+  observeEvent(input$network_edges_remove, {
+    current_edges <- nested_list_to_df(input$network_edges_remove)
+    edges_to_remove <- current_edges[which(current_edges$dashes==TRUE),"id"]
+    visNetworkProxy("network") %>%
+      visRemoveEdges(id = edges_to_remove)
+    
+    # Reactivate the adding indirect links button
+    enable("update_edges_button")
+    })
+  
+  # Enable/disable selection focus on network
+  observeEvent(input$network_focus_trigger, {
+    if (input$network_focus_trigger == TRUE){
+      visNetworkProxy("network") %>%
+        visOptions(highlightNearest = list(enabled = TRUE))
+    } else {
+      visNetworkProxy("network") %>%
+        visOptions(highlightNearest = list(enabled = FALSE))
+    }
+  })
+  
   # Load patient table ########################################################
   raw_data <- reactive({
     
@@ -472,59 +527,24 @@ server <- function(input, output, session) {
     network_data <- generate_network_data(time_unit = "hour",
                                           table = table,
                                           network_unit = input$selectedUnit,
-                                          colors_vector = network_colors,
-                                          indirect_button = input$IndirectLinks,
-                                          indirect_time = input$IndirectLinkTime)
-
-    # Return nothing if no link
-    if (is.null(network_data))
-      return(NULL)
-    
+                                          colors_vector = network_colors)
+  
     # Create network
     visNetwork(network_data[[1]], network_data[[2]]) %>%
       visPhysics(solver = "forceAtlas2Based") %>%
       visLegend(addEdges = network_data[[3]]) %>%
       visInteraction(multiselect = T) %>% 
       visNodes(color = list(background = "lightblue", 
-                            border = "darkblue")) %>%
-      visLayout(randomSeed = 32)
-  })
-  
-  # Wards plot ################################################################
-  wards_plot <- reactive({
-    
-    # Load the filtered table
-    table <- as.data.frame(filtered_data())
-    
-    # Unit selected
-    unit_selected <- input$selectedUnit
-    
-    # Generate plot data
-    ward_data <- wards_plot_data(table, unit_selected)
-    
-    # Base plot
-    plot <- ggplot(ward_data, aes(x=Ward, y=Days, fill=Ward)) +
-      geom_bar(stat="identity") +
-      theme_minimal() +
-      geom_text(aes(y = label_pos,
-                    label=paste(Patients, "patient(s)"))) +
-      theme(legend.position = "none") +
-      labs(x=NULL, y="Nombre de jours (moyenne)") +
-      ggtitle("Temps d'occupation moyen par unité")
-    
-    # Change colors depending on the number of wards
-    base_color <- hue_pal()(length(levels(as.factor(ward_data$Ward))))
-    other_color <- colors_vector[1:nrow(ward_data)]
-    
-    if (length(levels(ward_data$Ward)) <= 15){
-      new_colors <- other_color[order(ward_data$Days, decreasing = T)]
-      plot <- plot + scale_fill_manual(values=new_colors) 
-    } else {
-      new_colors <- base_color[order(ward_data$Days, decreasing = T)]
-      plot <- plot + scale_fill_manual(values=new_colors) 
-    }
-    
-    plot
+                            border = "darkblue",
+                            highlight = c(background = "#f57f7f",
+                                          border = "darkred"))) %>%
+      visLayout(randomSeed = 32) %>%
+      visOptions(highlightNearest = list(enabled = TRUE)) %>%
+      visExport(type = "png", label = "Exporter",
+                name = paste0(as.character(input$genotypePicker), "_reseau_", 
+                              format(Sys.time(), 
+                                     "%y%m%e"), input$moves_plot_format),
+                style = "")
   })
   
   # Display moves if table loaded
@@ -552,22 +572,20 @@ server <- function(input, output, session) {
       return(NULL)
     
     table <- filtered_data()
+    
+    # Formatting table before displaying
+    table <- table %>% mutate(Début_mouvement = format(Début_mouvement, "%Y-%m-%d %H:%M:%S"),
+                              Fin_mouvement = format(Fin_mouvement, "%Y-%m-%d %H:%M:%S"))
+    colnames(table) <- gsub("_", " ", colnames(table))
+    
     box(width = NULL,
         DT::renderDT(table,
-                        options = list(pageLength = 18,
-                                       lengthChange = F,
-                                       searching = F
-                        )))
-  })
-  
-  # Display wards barplot
-  output$wards <- renderPlotly({
-    
-    # Return nothing if no data loaded
-    if (is.null(input$Data_mouvements))
-      return(NULL)
-    
-    wards_plot()
+                     options = list(pageLength = 18,
+                                    lengthChange = F,
+                                    searching = F
+                                    )
+                     )
+        )
   })
   
   # Saving buttons Gantt plot
