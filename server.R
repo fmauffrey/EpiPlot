@@ -544,7 +544,12 @@ server <- function(input, output, session) {
                 name = paste0(as.character(input$genotypePicker), "_reseau_", 
                               format(Sys.time(), 
                                      "%y%m%e"), input$moves_plot_format),
-                style = "")
+                style = "background-color: #1d89ff; 
+                border: none; 
+                color: white; 
+                padding: 5px 10px; 
+                font-size: 15px;
+                border-radius: 2px;")
   })
   
   # Display moves if table loaded
