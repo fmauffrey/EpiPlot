@@ -1,6 +1,7 @@
 # Load required packages
 suppressPackageStartupMessages({
   library(shiny)
+  library(shinyalert)
   library(shinyWidgets)
   library(dplyr)
   library(ggplot2)
@@ -15,7 +16,6 @@ suppressPackageStartupMessages({
   library(sna)
   library(scales)
   library(readxl)
-  library(shinyalert)
   library(plotrix)
   library(shinyhelper)
   library(visNetwork)

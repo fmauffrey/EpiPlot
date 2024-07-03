@@ -202,7 +202,7 @@ server <- function(input, output, session) {
     
     # Pop-up if replacements occurred
     if (replacement > 0){
-      shinyalert(title="Date(s) manquante(s)",
+      show_alert(title="Date(s) manquante(s)",
                  type="info",
                  closeOnClickOutside = T,
                  text=paste0(replacement, " séjour(s) sans date de sortie. La date du jour sera utilisée."))
