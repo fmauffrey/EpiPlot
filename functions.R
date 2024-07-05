@@ -1,6 +1,7 @@
 generate_network_data <- function(time_unit, detailed_button, table, 
                                   network_unit, colors_vector, 
-                                  indirect_time=14){
+                                  indirect_time=14, length_edges=150,
+                                  size_font_edges=20){
   # Generate network data for plotting or extracting label info on selected
   
   # Import filtered data
@@ -97,9 +98,9 @@ generate_network_data <- function(time_unit, detailed_button, table,
 
     # Add custom characteristics to edges
     net_edges$width <- rescale(as.numeric(net_edges$label), c(2, 20))
-    net_edges$length <- rep(150, nrow(net_edges))
+    net_edges$length <- rep(length_edges, nrow(net_edges))
     net_edges$color.color <- rep("#818281", nrow(net_edges))
-    net_edges$font.size <- rep(20, nrow(net_edges))
+    net_edges$font.size <- rep(size_font_edges, nrow(net_edges))
     net_edges$font.background <- rep("#ffffff", nrow(net_edges))
     net_edges$color <- colors_vector[edge_colors_code]
     net_edges$dashes <- rep(FALSE, nrow(net_edges))

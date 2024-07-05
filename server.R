@@ -202,7 +202,7 @@ server <- function(input, output, session) {
     
     # Pop-up if replacements occurred
     if (replacement > 0){
-      shinyalert(title="Date(s) manquante(s)",
+      show_alert(title="Date(s) manquante(s)",
                  type="info",
                  closeOnClickOutside = T,
                  text=paste0(replacement, " séjour(s) sans date de sortie. La date du jour sera utilisée."))
@@ -527,11 +527,13 @@ server <- function(input, output, session) {
     network_data <- generate_network_data(time_unit = "hour",
                                           table = table,
                                           network_unit = input$selectedUnit,
-                                          colors_vector = network_colors)
-  
+                                          colors_vector = network_colors,
+                                          length_edges = input$LengthEdges,
+                                          size_font_edges = input$SizeFontEdges)
+
     # Create network
     visNetwork(network_data[[1]], network_data[[2]]) %>%
-      visPhysics(solver = "forceAtlas2Based") %>%
+      visPhysics(solver = "forceAtlas2Based", forceAtlas2Based = list(gravitationalConstant = input$NetworkGravity)) %>%
       visLegend(addEdges = network_data[[3]]) %>%
       visInteraction(multiselect = T) %>% 
       visNodes(color = list(background = "lightblue", 
@@ -544,7 +546,12 @@ server <- function(input, output, session) {
                 name = paste0(as.character(input$genotypePicker), "_reseau_", 
                               format(Sys.time(), 
                                      "%y%m%e"), input$moves_plot_format),
-                style = "")
+                style = "background-color: #1d89ff; 
+                border: none; 
+                color: white; 
+                padding: 5px 10px; 
+                font-size: 15px;
+                border-radius: 2px;")
   })
   
   # Display moves if table loaded

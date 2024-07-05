@@ -1,6 +1,7 @@
 # Load required packages
 suppressPackageStartupMessages({
   library(shiny)
+  library(shinyalert)
   library(shinyWidgets)
   library(dplyr)
   library(ggplot2)
@@ -15,7 +16,6 @@ suppressPackageStartupMessages({
   library(sna)
   library(scales)
   library(readxl)
-  library(shinyalert)
   library(plotrix)
   library(shinyhelper)
   library(visNetwork)
@@ -40,7 +40,7 @@ secure_app(language = "fr",
                                 dropdownMenu(type="notifications", 
                                              badgeStatus = NULL,
                                              icon = icon("info"),
-                                             headerText = "Epiplot version 0.9.5",
+                                             headerText = "Epiplot version 0.9.6",
                                              notificationItem("florian.mauffrey@chuv.ch",
                                                               icon = icon("envelope"),
                                                               status = "info"))),
@@ -137,11 +137,23 @@ secure_app(language = "fr",
                                                     style = "display: flex; flex-direction: column; gap: 10px;")),
                                              column(width = 2,
                                                     actionBttn("getNodes", label = "Afficher les IPP sélectionnées",
-                                                               size = "md", style = "minimal", color = "success")),
+                                                               size = "sm")),
                                              column(width = 2,
                                                     prettySwitch("network_focus_trigger", label = "Focus",
                                                                  value = TRUE, status = "success", slim = TRUE)
-                                                    )
+                                                    ),
+                                             column(width = 1,
+                                                    sliderInput(inputId = 'LengthEdges', 
+                                                                label = "Longueur des liens", 
+                                                                value = 150, min = 1, max = 300, ticks = F)),
+                                             column(width = 1,
+                                                    sliderInput(inputId = 'SizeFontEdges', 
+                                                                label = "Taille texte liens", 
+                                                                value = 20, min = 1, max = 40, ticks = F)),
+                                             column(width = 1,
+                                                    sliderInput(inputId = 'NetworkGravity', 
+                                                                label = "Facteur de gravité", 
+                                                                value = -50, min = -100, max = -10, ticks = F))
                                              )
                                          )
                                        )
