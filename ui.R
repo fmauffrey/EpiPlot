@@ -141,7 +141,19 @@ secure_app(language = "fr",
                                              column(width = 2,
                                                     prettySwitch("network_focus_trigger", label = "Focus",
                                                                  value = TRUE, status = "success", slim = TRUE)
-                                                    )
+                                                    ),
+                                             column(width = 1,
+                                                    sliderInput(inputId = 'LengthEdges', 
+                                                                label = "Longueur des liens", 
+                                                                value = 150, min = 1, max = 300, ticks = F)),
+                                             column(width = 1,
+                                                    sliderInput(inputId = 'SizeFontEdges', 
+                                                                label = "Taille texte liens", 
+                                                                value = 20, min = 1, max = 40, ticks = F)),
+                                             column(width = 1,
+                                                    sliderInput(inputId = 'NetworkGravity', 
+                                                                label = "Facteur de gravité", 
+                                                                value = -50, min = -100, max = -10, ticks = F))
                                              )
                                          )
                                        )

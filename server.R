@@ -527,11 +527,13 @@ server <- function(input, output, session) {
     network_data <- generate_network_data(time_unit = "hour",
                                           table = table,
                                           network_unit = input$selectedUnit,
-                                          colors_vector = network_colors)
-  
+                                          colors_vector = network_colors,
+                                          length_edges = input$LengthEdges,
+                                          size_font_edges = input$SizeFontEdges)
+
     # Create network
     visNetwork(network_data[[1]], network_data[[2]]) %>%
-      visPhysics(solver = "forceAtlas2Based") %>%
+      visPhysics(solver = "forceAtlas2Based", forceAtlas2Based = list(gravitationalConstant = input$NetworkGravity)) %>%
       visLegend(addEdges = network_data[[3]]) %>%
       visInteraction(multiselect = T) %>% 
       visNodes(color = list(background = "lightblue", 
