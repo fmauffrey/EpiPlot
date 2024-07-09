@@ -131,16 +131,18 @@ secure_app(language = "fr",
                                                                 label = "Jours d'écart pour un lien indirect", 
                                                                 value = 14, min = 1, max = 28, ticks = F)),
                                              column(width = 1,
-                                                    div(
-                                                    actionBttn("update_edges_button", label = "Ajouter", size = "sm"),
-                                                    actionBttn("remove_edges_button", label= "Enlever", size = "sm"),
-                                                    style = "display: flex; flex-direction: column; gap: 10px;")),
+                                                    radioGroupButtons(
+                                                      inputId = "update_edges_button",
+                                                      choices = c("Avec", "Sans"),
+                                                      selected = "Sans",
+                                                      direction = "vertical"
+                                                    )),
                                              column(width = 2,
                                                     actionBttn("getNodes", label = "Afficher les IPP sélectionnées",
                                                                size = "sm")),
                                              column(width = 2,
                                                     prettySwitch("network_focus_trigger", label = "Focus",
-                                                                 value = TRUE, status = "success", slim = TRUE)
+                                                                 value = TRUE, status = "success")
                                                     ),
                                              column(width = 1,
                                                     sliderInput(inputId = 'LengthEdges', 

@@ -105,6 +105,7 @@ server <- function(input, output, session) {
   observeEvent(input$update_edges_button, {
 
     if (!is.null(input$Data_mouvements)){
+      if (input$update_edges_button=="Avec"){
       # Import table
       table <- filtered_data()
       number_units <- length(levels(factor(table[,input$selectedUnit])))
@@ -125,25 +126,17 @@ server <- function(input, output, session) {
       visNetworkProxy("network") %>%
         visUpdateEdges(edges = network_data[[4]])
       
-      # Disabling the add indirect links button
-      disable("update_edges_button")
-      }
+      } else if ((input$update_edges_button=="Sans")){
+        visNetworkProxy("network") %>%
+          visGetEdges(input = "network_edges_remove")
+      }}
     })
-  
-  # Remove all indirect links on network
-  observeEvent(input$remove_edges_button, {
-    visNetworkProxy("network") %>%
-      visGetEdges(input = "network_edges_remove")
-  })
   
   observeEvent(input$network_edges_remove, {
     current_edges <- nested_list_to_df(input$network_edges_remove)
     edges_to_remove <- current_edges[which(current_edges$dashes==TRUE),"id"]
     visNetworkProxy("network") %>%
       visRemoveEdges(id = edges_to_remove)
-    
-    # Reactivate the adding indirect links button
-    enable("update_edges_button")
     })
   
   # Enable/disable selection focus on network
@@ -541,17 +534,7 @@ server <- function(input, output, session) {
                             highlight = c(background = "#f57f7f",
                                           border = "darkred"))) %>%
       visLayout(randomSeed = 32) %>%
-      visOptions(highlightNearest = list(enabled = TRUE)) %>%
-      visExport(type = "png", label = "Exporter",
-                name = paste0(as.character(input$genotypePicker), "_reseau_", 
-                              format(Sys.time(), 
-                                     "%y%m%e"), input$moves_plot_format),
-                style = "background-color: #1d89ff; 
-                border: none; 
-                color: white; 
-                padding: 5px 10px; 
-                font-size: 15px;
-                border-radius: 2px;")
+      visOptions(highlightNearest = list(enabled = TRUE))
   })
   
   # Display moves if table loaded
