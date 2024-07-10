@@ -150,6 +150,17 @@ server <- function(input, output, session) {
     }
   })
   
+  # Enable/disable gravity on network
+  observeEvent(input$network_gravity_trigger, {
+    if (input$network_gravity_trigger == TRUE){
+      visNetworkProxy("network") %>%
+        visPhysics(enabled = T)
+    } else {
+      visNetworkProxy("network") %>%
+        visPhysics(enabled = F)
+    }
+  })
+  
   # Load patient table ########################################################
   raw_data <- reactive({
     
