@@ -148,17 +148,9 @@ secure_app(language = "fr",
                                                                  value = TRUE, status = "success")
                                                     ),
                                              column(width = 1,
-                                                    sliderInput(inputId = 'LengthEdges', 
-                                                                label = "Longueur des liens", 
-                                                                value = 150, min = 1, max = 300, ticks = F)),
-                                             column(width = 1,
-                                                    sliderInput(inputId = 'SizeFontEdges', 
-                                                                label = "Taille texte liens", 
-                                                                value = 20, min = 1, max = 40, ticks = F)),
-                                             column(width = 1,
-                                                    sliderInput(inputId = 'NetworkGravity', 
-                                                                label = "Facteur de gravité", 
-                                                                value = -50, min = -100, max = -10, ticks = F))
+                                                    sliderInput(inputId = 'SizeNodes', 
+                                                                label = "Taille des noeuds", 
+                                                                value = 15, min = 1, max = 30, ticks = F))
                                              )
                                          )
                                        )

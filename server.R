@@ -161,6 +161,13 @@ server <- function(input, output, session) {
     }
   })
   
+  # Options for network
+  observe(
+    visNetworkProxy("network") %>%
+      visNodes(font = list(size = input$SizeNodes))
+  )
+  
+  
   # Load patient table ########################################################
   raw_data <- reactive({
     
@@ -531,19 +538,18 @@ server <- function(input, output, session) {
     network_data <- generate_network_data(time_unit = "hour",
                                           table = table,
                                           network_unit = input$selectedUnit,
-                                          colors_vector = network_colors,
-                                          length_edges = input$LengthEdges,
-                                          size_font_edges = input$SizeFontEdges)
+                                          colors_vector = network_colors)
 
     # Create network
     visNetwork(network_data[[1]], network_data[[2]]) %>%
-      visPhysics(solver = "forceAtlas2Based", forceAtlas2Based = list(gravitationalConstant = input$NetworkGravity)) %>%
+      visPhysics(solver = "forceAtlas2Based", forceAtlas2Based = list(gravitationalConstant = -50)) %>%
       visLegend(addEdges = network_data[[3]]) %>%
       visInteraction(multiselect = T) %>% 
       visNodes(color = list(background = "lightblue", 
                             border = "darkblue",
                             highlight = c(background = "#f57f7f",
-                                          border = "darkred"))) %>%
+                                          border = "darkred")),
+               font = list(size = 15)) %>%
       visLayout(randomSeed = 32) %>%
       visOptions(highlightNearest = list(enabled = TRUE))
   })
