@@ -126,9 +126,13 @@ server <- function(input, output, session) {
       visNetworkProxy("network") %>%
         visUpdateEdges(edges = network_data[[4]])
       
+      disable("IndirectLinkTime")
+      
       } else if ((input$update_edges_button=="Sans")){
         visNetworkProxy("network") %>%
           visGetEdges(input = "network_edges_remove")
+        
+        enable("IndirectLinkTime")
       }}
     })
   
