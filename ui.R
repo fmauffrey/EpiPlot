@@ -151,8 +151,6 @@ secure_app(language = "fr",
                                                                  value = TRUE, status = "success"))),
                                          column(width = 1,
                                                 actionBttn("getNodes", label = "Afficher/Filtrer les IPP sélectionnées",
-                                                           size = "md", style = "simple", color = "primary")),
-                                             )
-                                         )
-                                       )
-                              )))
+                                                           size = "md", style = "simple", color = "primary"))
+                                         )))
+                  )))
