@@ -93,28 +93,26 @@ secure_app(language = "fr",
                                          
                                          
                                          # Box with controls
-                                         box(width = 12,
-                                             column(width = 2,
-                                                    selectInput("ganttOrder", "Ordre", list("Date d'admission" = "Début_mouvement", "IPP" = "IPP"), selected = "Début_mouvement")),
-                                             column(width = 2,
+                                         box(width = 2, height = "20vh",
+                                                    selectInput("ganttOrder", "Ordre", list("Date d'admission" = "Début_mouvement", "IPP" = "IPP"), 
+                                                                selected = "Début_mouvement"),
                                                     selectInput("scaleType", "Echelle", selected = "month", list("Jours" = "day",
                                                                                                                             "Semaines" = "week",
                                                                                                                             "Mois" = "month",
                                                                                                                             "Semestre" = "semester",
                                                                                                                             "Années" = "year"))),
-                                             column(width = 2,
-                                                    sliderInput(inputId = 'DotSize', label = 'Taille prélèvements', value = 3, min = 1, max = 10, ticks = F)
-                                             ),
-                                             column(width = 2,
-                                                    sliderInput(inputId = 'segmentSize', label = 'Taille mouvements', value = 4, min = 1, max = 20, ticks = F)
-                                             ),
-                                             column(width=2,
-                                                    pickerInput("highlightPicker", "Mettre en avant", choices = "",
-                                                                multiple = TRUE, options = pickerOptions(title = "Aucune sélection", size = 10, actionsBox = T, liveSearch = T))),
-                                             column(width=2, div(style = "display: flex; justify-content: center;",
-                                                    actionBttn("download_moves_button", label=NULL, size="lg", style="gradient",
-                                                               icon=icon("download", class="sharp", lib = "font-awesome"))))
-                                       ))),
+                                         box(width = 2, height = "20vh",
+                                             sliderInput(inputId = 'DotSize', label = 'Taille prélèvements', value = 3, min = 1, max = 10, ticks = F),
+                                             sliderInput(inputId = 'segmentSize', label = 'Taille mouvements', value = 4, min = 1, max = 20, ticks = F)),
+                                         box(width = 2, height = "20vh",
+                                             pickerInput("highlightPicker", "Mettre en avant", choices = "",
+                                                         multiple = TRUE, options = pickerOptions(title = "Aucune sélection", 
+                                                                                                  size = 10, 
+                                                                                                  actionsBox = T, 
+                                                                                                  liveSearch = T)),
+                                             actionBttn("download_moves_button", label=NULL, size="lg", style="gradient",
+                                                        icon=icon("download", class="sharp", lib = "font-awesome"))),
+                                       )),
                               
                               ########### Network tab
                               tabPanel("Réseau", icon = icon("circle-nodes"),
