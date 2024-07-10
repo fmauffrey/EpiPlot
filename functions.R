@@ -151,7 +151,7 @@ genotype_count_table <- function(table){
   # Return a table with the count of each DLST
   
   table <- dplyr::distinct(.data = table, IPP, .keep_all = T)
-  ST_count <- table(unlist(strsplit(table$Génotype, ",")))
+  ST_count <- table(unlist(strsplit(table$Génotype, ", ")))
   ST_count <- as.data.frame(ST_count)
   colnames(ST_count) <- c("DLST", "Count")
   
