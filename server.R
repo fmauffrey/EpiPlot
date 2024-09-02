@@ -446,7 +446,8 @@ server <- function(input, output, session) {
             legend.position = "right",
             axis.text = element_text(size=15),
             axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
-            panel.grid.minor.x = element_blank()) +
+            panel.grid.minor.x = element_blank(),
+            panel.grid.major = element_line(color="grey")) +
       ggtitle(paste0(input$genotypePicker, " | ", 
                      format(input$DateRange[1], "%d-%m-%Y"), " à ", 
                      format(input$DateRange[2], "%d-%m-%Y"))) + 
