@@ -147,8 +147,13 @@ secure_app(language = "fr",
                                              column(width = 6,
                                                     prettySwitch("network_gravity_trigger", label = "Gravité",
                                                                  value = TRUE, status = "success"))),
-                                         column(width = 1,
-                                                actionBttn("getNodes", label = "Afficher/Filtrer les IPP sélectionnées",
-                                                           size = "md", style = "simple", color = "primary"))
+                                         box(title = "IPP",
+                                             width = 2, height = "20vh",
+                                             pickerInput("findPatient_network", choices = "",
+                                                         options = pickerOptions(title = "Localiser un patient",
+                                                                                   size = 10,
+                                                                                   `live-search` = TRUE)),
+                                                    actionBttn("getNodes", label = "Afficher/Filtrer les IPP sélectionnées",
+                                                               size = "md", style = "simple", color = "primary"))
                                          )))
                   )))

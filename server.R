@@ -37,36 +37,46 @@ server <- function(input, output, session) {
   
   # Observe events for getting nodes selected on network and display them
   # + Reactive variable to store selected nodes
-  observeEvent(input$getNodes, {
-    visNetworkProxy("network") %>%
-      visGetSelectedNodes()
-  })
+  network_nodes <- reactiveVal()
+  selectedNodes <- reactiveVal()
   
-  selectedNodes <- reactiveVal(NULL)
-  observeEvent(input$network_selectedNodes, {
-    selectedNodes(input$network_selectedNodes)
-  })
-  
-
-  observeEvent(selectedNodes(), {
-    if (!is.null(input$network_selectedNodes)){
-      selected_nodes <- input$network_selectedNodes
-      nodes <- as.data.frame(generate_network_data(time_unit = "days", 
-                                                   table = filtered_data(),
-                                                   network_unit = input$selectedUnit,
-                                                   colors_vector = colors_vector)[[1]])
-      selection <- nodes[selected_nodes,"label"]
-      shinyalert(title="IPP", type="info", html = T, closeOnClickOutside=T, 
-                 showConfirmButton=T, confirmButtonText="Filtrer ces IPP",
-                 text=HTML(paste(selection, collapse = "<br/>")),
-                 callbackR = function(x){ if(x != F) network_update(selection)})
+  observe({
+    if (!is.null(input$network_selected)){
+      selectedNodes(network_nodes()[input$network_selected,"label"])
+    } else {
+      selectedNodes(NULL)
     }
   })
   
-  # Update selected patients from network alert
+  observeEvent(input$getNodes, {
+    if (!is.null(selectedNodes())){
+      shinyalert(title="IPP", type="info", html = T, closeOnClickOutside=T, 
+                 showConfirmButton=T, confirmButtonText="Filtrer ces IPP",
+                 text=HTML(paste(selectedNodes(), collapse = "<br/>")),
+                 callbackR = function(x){ if(x != F) network_update()})
+    }
+  })
+  
   network_update <- function(patients){
-    updatePickerInput(session, "patientPicker", selected = patients)
+    updatePickerInput(session, "patientPicker", selected = selectedNodes())
+    updatePickerInput(session, "findPatient_network", choices = selectedNodes(), selected = NA)
   }
+  
+  observeEvent(input$findPatient_network, {
+    if (!is.null(network_nodes())){
+      focus_id <- network_nodes()[network_nodes()$label==input$findPatient_network,"id"]
+      if (length(focus_id) == 1){
+        visNetworkProxy("network") %>%
+          visFocus(id = focus_id)
+      }
+    }
+  })
+  
+  # Event for changing patient selected 
+  observeEvent(input$patientPicker, {
+    updatePickerInput(session, "findPatient_network", choices = input$patientPicker,
+                      selected = NULL)
+  })
   
   # Modal for choosing plot size before saving
   observeEvent(input$download_moves_button, {
@@ -166,11 +176,11 @@ server <- function(input, output, session) {
   })
   
   # Options for network
-  observe(
+  observe({
     visNetworkProxy("network") %>%
-      visNodes(font = list(size = input$SizeNodes))
-  )
-  
+      visNodes(font = list(size = input$SizeNodes)) %>%
+      visSelectNodes(id = input$highlightPicker_network)
+  })
   
   # Load patient table ########################################################
   raw_data <- reactive({
@@ -236,6 +246,9 @@ server <- function(input, output, session) {
                       selected = patients_list,
                       choicesOpt = list(style = rep("color:black;", length(patients_list))))
     updatePickerInput(session, "highlightPicker", choices = patients_list,
+                      selected = NA,
+                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
+    updatePickerInput(session, "findPatient_network", choices = patients_list,
                       selected = NA,
                       choicesOpt = list(style = rep("color:black;", length(patients_list))))
     
@@ -341,6 +354,9 @@ server <- function(input, output, session) {
                       selected = patients_list,
                       choicesOpt = list(style = rep("color:black;", length(patients_list))))
     updatePickerInput(session, "highlightPicker", choices = patients_list,
+                      selected = NA,
+                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
+    updatePickerInput(session, "findPatient_network", choices = patients_list,
                       selected = NA,
                       choicesOpt = list(style = rep("color:black;", length(patients_list))))
 
@@ -545,6 +561,9 @@ server <- function(input, output, session) {
                                           network_unit = input$selectedUnit,
                                           colors_vector = network_colors)
 
+    # Save the nodes information in the reactive value
+    network_nodes(as.data.frame(network_data[[1]]))
+    
     # Set the number of column for the legend depending of the number of edges
     legend_data <- network_data[[3]]
     legend_data$font.size <- rep(40,nrow(legend_data))
@@ -553,15 +572,21 @@ server <- function(input, output, session) {
     # Create network
     visNetwork(network_data[[1]], network_data[[2]]) %>%
       visPhysics(solver = "forceAtlas2Based", forceAtlas2Based = list(gravitationalConstant = -50)) %>%
-      visLegend(addEdges = legend_data) %>%
-      visInteraction(multiselect = T) %>% 
+      visLegend(addEdges = legend_data) %>% 
       visNodes(color = list(background = "lightblue", 
                             border = "darkblue",
                             highlight = c(background = "#f57f7f",
                                           border = "darkred")),
                font = list(size = 15)) %>%
       visLayout(randomSeed = 32) %>%
-      visOptions(highlightNearest = list(enabled = TRUE))
+      visOptions(highlightNearest = list(enabled = TRUE)) %>%
+      visEvents(selectNode = "function(nodes) {
+        Shiny.onInputChange('network_selected', nodes.nodes);
+      }",
+                deselectNode = "function(nodes) {
+          Shiny.onInputChange('network_selected', null);
+        }")  %>%
+      visInteraction(multiselect = T)
   })
   
   # Display moves if table loaded
