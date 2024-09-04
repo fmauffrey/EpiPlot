@@ -81,7 +81,7 @@ server <- function(input, output, session) {
   # Modal for choosing plot size before saving
   observeEvent(input$download_moves_button, {
     show_alert(
-      title = "Choisir un format",
+      title = "Exportation du graphique",
       html = TRUE,
       width = "20%",
       btn_labels = NA,
