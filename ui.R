@@ -123,7 +123,7 @@ secure_app(language = "fr",
                                          
                                          box(title = "Liens indirects", width = 2,  height = "25vh",
                                              sliderInput(inputId = 'IndirectLinkTime',
-                                                         label = "Nombres de jours",
+                                                         label = "Jours d'écart",
                                                          value = 14, min = 1, max = 28, ticks = F),
                                              radioGroupButtons(inputId = "update_edges_button",
                                                                choices = c("Avec", "Sans"),

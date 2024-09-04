@@ -567,7 +567,7 @@ server <- function(input, output, session) {
     # Set the number of column for the legend depending of the number of edges
     legend_data <- network_data[[3]]
     legend_data$font.size <- rep(40,nrow(legend_data))
-    legend_data$width <- rep(40,nrow(legend_data))
+    legend_data$width <- rep(30,nrow(legend_data))
     
     # Create network
     visNetwork(network_data[[1]], network_data[[2]]) %>%
