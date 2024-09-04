@@ -545,10 +545,15 @@ server <- function(input, output, session) {
                                           network_unit = input$selectedUnit,
                                           colors_vector = network_colors)
 
+    # Set the number of column for the legend depending of the number of edges
+    legend_data <- network_data[[3]]
+    legend_data$font.size <- rep(40,nrow(legend_data))
+    legend_data$width <- rep(40,nrow(legend_data))
+    
     # Create network
     visNetwork(network_data[[1]], network_data[[2]]) %>%
       visPhysics(solver = "forceAtlas2Based", forceAtlas2Based = list(gravitationalConstant = -50)) %>%
-      visLegend(addEdges = network_data[[3]]) %>%
+      visLegend(addEdges = legend_data) %>%
       visInteraction(multiselect = T) %>% 
       visNodes(color = list(background = "lightblue", 
                             border = "darkblue",
