@@ -209,28 +209,33 @@ server <- function(input, output, session) {
                               Unité_fonctionelle = as.factor(Unité_fonctionelle),
                               Unité_de_soins = as.factor(Unité_de_soins))
     
-    # For patients still at the hospital, replace last movement date with current date
-    replacement <- 0 # Changes count
-    for (line in 1:nrow(table)){
-      if (is.na(table[line,"Fin_séjour"])){ # If no end date
-        if (line!=nrow(table)){ # If not the last line, check for following line
-          if (!(table[line,"IPP"]==table[line+1,"IPP"])){
-            table[line, "Fin_mouvement"] <- Sys.Date()
-            replacement <- replacement +1
-          }
-        } else {
-          table[line, "Fin_mouvement"] <- Sys.Date()
-          replacement <- replacement +1
-        }
-      }
-    }
+    
+    # Check if NA are present in date and set replacement popup state
+    popup_replace <- if_else(NA %in% table$Fin_séjour, T, F)
+    replacement_number <- nrow(unique(table[is.na(table$Fin_séjour),"IPP"]))
+    
+    # Identify rows where "Fin_séjour" is NA and replace "Fin_mouvement" if applicable
+    table <- table %>%
+      mutate(Fin_mouvement = if_else(
+        is.na(Fin_séjour) & (IPP != lead(IPP, default = "")), # Condition: Fin_séjour is NA and IPP is not equal to the next row
+        as.POSIXct(Sys.Date()),                               # Action: Replace Fin_mouvement with today's date as POSIXct
+        Fin_mouvement                                         # Otherwise, keep the existing value
+      ))
+    
+    # Replace "Fin_mouvement" for the last row if "Fin_séjour" is NA
+    table <- table %>%
+      mutate(Fin_mouvement = if_else(
+        is.na(Fin_séjour) & row_number() == nrow(table),      # Condition: Fin_séjour is NA and it's the last row
+        as.POSIXct(Sys.Date()),                               # Action: Replace Fin_mouvement with today's date as POSIXct
+        Fin_mouvement                                         # Otherwise, keep the existing value
+      ))
     
     # Pop-up if replacements occurred
-    if (replacement > 0){
+    if (popup_replace){
       show_alert(title="Date(s) manquante(s)",
                  type="info",
                  closeOnClickOutside = T,
-                 text=paste0(replacement, " séjour(s) sans date de sortie. La date du jour sera utilisée."))
+                 text=paste0(replacement_number, " séjour(s) sans date de sortie. La date du jour sera utilisée."))
     }
     
     # Remove useless columns
