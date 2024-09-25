@@ -24,8 +24,8 @@ server <- function(input, output, session) {
   # Manual date range update buttons - Reset
   observeEvent(input$bttnDateFilterReset, {
     if (!is.null(input$Data_mouvements)){
-      min_date <- min(raw_data()$Début_mouvement)
-      max_date <- max(raw_data()$Fin_mouvement)
+      min_date <- min(moves_data()$Début_mouvement)
+      max_date <- max(moves_data()$Fin_mouvement)
       # The table loaded changes if sampling data loaded or not
       if (is.null(input$Data_sampling)){
         updateDateRangeInput(session, "DateRange", start=min_date-150000, end=max_date+150000)
@@ -182,8 +182,8 @@ server <- function(input, output, session) {
       visSelectNodes(id = input$highlightPicker_network)
   })
   
-  # Load patient table ########################################################
-  raw_data <- reactive({
+  # Load moves table and format ###############################################
+  moves_data <- reactive({
     
     # Format moves table
     table <- format_moves_table(input$Data_mouvements$datapath) 
@@ -205,7 +205,7 @@ server <- function(input, output, session) {
   sampling_data <- reactive({
     
     # Import raw data table
-    table <- raw_data()
+    table <- moves_data()
     
     # Load the table
     table_samp <- read_excel(input$Data_sampling$datapath, skip =1,
@@ -305,7 +305,7 @@ server <- function(input, output, session) {
     
     # Load table depending if sampling data was given or not
     if (is.null(input$Data_sampling)){
-      data_table <- as.data.frame(raw_data())
+      data_table <- as.data.frame(moves_data())
     } else {
       data_table <- as.data.frame(genotype_filtered_data())
     }
