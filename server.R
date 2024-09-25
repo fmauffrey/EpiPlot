@@ -185,31 +185,8 @@ server <- function(input, output, session) {
   # Load patient table ########################################################
   raw_data <- reactive({
     
-    # First read of the table to find the number of rows to lead
-    table <- read_excel(input$Data_mouvements$datapath, skip = 7)
-    rows_number <- nrow(table) - 2 # 2 useless rows at the end
-    
-    # Load the table
-    table <- read_excel(input$Data_mouvements$datapath, skip = 8,
-                        col_names = c("IPP", "Séjour", "Début_séjour", 
-                                      "Fin_séjour", "Début_mouvement", 
-                                      "Fin_mouvement", "Département", 
-                                      "Service", "Unité_fonctionelle", 
-                                      "Unité_de_soins", "Durée_mouvement"),
-                        n_max = rows_number)
-    
-    # Convert into appropriate type
-    table <- table %>% mutate(IPP = as.character(IPP),
-                              Séjour = as.factor(Séjour),
-                              Début_mouvement = as.POSIXct(Début_mouvement), 
-                              Fin_mouvement = as.POSIXct(Fin_mouvement),
-                              Fin_séjour = as.POSIXct(Fin_séjour),
-                              Département = as.factor(Département),
-                              Service = as.factor(Service),
-                              Unité_fonctionelle = as.factor(Unité_fonctionelle),
-                              Unité_de_soins = as.factor(Unité_de_soins))
-    
-    
+    table <- format_moves_table(input$Data_mouvements$datapath) # format moves table
+  
     # Check if NA are present in date and set replacement popup state
     popup_replace <- if_else(NA %in% table$Fin_séjour, T, F)
     replacement_number <- nrow(unique(table[is.na(table$Fin_séjour),"IPP"]))
@@ -284,10 +261,10 @@ server <- function(input, output, session) {
         new_row <- data.frame(IPP=IPP,
                               Début_mouvement=date,
                               fin_mouvement=date,
-                              Département="AMB",
-                              Service="AMB",
-                              Unité_fonctionelle="AMB",
-                              Unité_de_soins="AMB")
+                              Département=NA,
+                              Service=NA,
+                              Unité_fonctionelle=NA,
+                              Unité_de_soins=NA)
         colnames(new_row) <- colnames(table)
         table <- rbind.data.frame(table, new_row)
       }

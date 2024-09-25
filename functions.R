@@ -1,3 +1,33 @@
+format_moves_table <- function(input_table){
+  # Format the moves table
+  
+  # First read of the table to find the number of rows to lead
+  moves_table <- read_excel(input_table, skip = 7)
+  rows_number <- nrow(moves_table) - 2 # 2 useless rows at the end
+  
+  # Load the table
+  moves_table <- read_excel(input_table, skip = 8,
+                            col_names = c("IPP", "Séjour", "Début_séjour",
+                                          "Fin_séjour", "Début_mouvement",
+                                          "Fin_mouvement", "Département",
+                                          "Service", "Unité_fonctionelle",
+                                          "Unité_de_soins", "Durée_mouvement"),
+                            n_max = rows_number)
+  
+  # Convert into appropriate type
+  moves_table <- moves_table %>% mutate(IPP = as.character(IPP),
+                                        Séjour = as.factor(Séjour),
+                                        Début_mouvement = as.POSIXct(Début_mouvement),
+                                        Fin_mouvement = as.POSIXct(Fin_mouvement),
+                                        Fin_séjour = as.POSIXct(Fin_séjour),
+                                        Département = as.factor(Département),
+                                        Service = as.factor(Service),
+                                        Unité_fonctionelle = as.factor(Unité_fonctionelle),
+                                        Unité_de_soins = as.factor(Unité_de_soins))
+  
+  return(moves_table)
+}
+
 generate_network_data <- function(time_unit, detailed_button, table, 
                                   network_unit, colors_vector, 
                                   indirect_time=14, length_edges=150,
