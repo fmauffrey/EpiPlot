@@ -201,16 +201,30 @@ server <- function(input, output, session) {
     return(table)
   })
   
+  # Load sampling data and format #############################################
+  samplings_table <- reactive({
+    # Load the table
+    table <- read_excel(input$Data_sampling$datapath, skip =1,
+                             col_names = c("IPP", "PRELEVEMENT",
+                                           "DATE_PRELEVEMENT", "CLUSTER"))
+    
+    # Convert into appropriate type
+    table <- as.data.frame(table %>% mutate(IPP = as.character(IPP),
+                                                      PRELEVEMENT = as.factor(PRELEVEMENT),
+                                                      DATE_PRELEVEMENT = as.POSIXct(DATE_PRELEVEMENT),
+                                                      CLUSTER = as.character(CLUSTER)))
+    return(table)
+  })
+  
   # Add sampling information to the main table ################################
   sampling_data <- reactive({
+    
+    # Import moves data amnd 
     
     # Import raw data table
     table <- moves_data()
     
-    # Load the table
-    table_samp <- read_excel(input$Data_sampling$datapath, skip =1,
-                             col_names = c("IPP", "PRELEVEMENT",
-                                           "DATE_PRELEVEMENT", "CLUSTER"))
+    table_samp <- samplings_table()
     
     # Add the AMBULATOIRE level to the relevant categories
     levels(table$Département) <- c(levels(table$Département), "AMB")
@@ -233,12 +247,6 @@ server <- function(input, output, session) {
         table <- rbind.data.frame(table, new_row)
       }
     }
-
-    # Convert into appropriate type
-    table_samp <- as.data.frame(table_samp %>% mutate(IPP = as.character(IPP),
-                                                      PRELEVEMENT = as.factor(PRELEVEMENT),
-                                                      DATE_PRELEVEMENT = as.POSIXct(DATE_PRELEVEMENT),
-                                                      CLUSTER = as.character(CLUSTER)))
 
     # Add sampling column
     table$Génotype <- rep("Aucun", nrow(table))

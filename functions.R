@@ -1,12 +1,12 @@
-format_moves_table <- function(input_table){
+format_moves_table <- function(input_table_path){
   # Format the moves table
   
   # First read of the table to find the number of rows to lead
-  moves_table <- read_excel(input_table, skip = 7)
+  moves_table <- read_excel(input_table_path, skip = 7)
   rows_number <- nrow(moves_table) - 2 # 2 useless rows at the end
   
   # Load the table
-  moves_table <- read_excel(input_table, skip = 8,
+  moves_table <- read_excel(input_table_path, skip = 8,
                             col_names = c("IPP", "Séjour", "Début_séjour",
                                           "Fin_séjour", "Début_mouvement",
                                           "Fin_mouvement", "Département",
@@ -78,6 +78,20 @@ update_patients_widgets <- function(session, input_table){
   updatePickerInput(session, "findPatient_network", choices = patients_list,
                     selected = NA,
                     choicesOpt = list(style = rep("color:black;", length(patients_list))))
+}
+
+format_samplings_table(input_table){
+  
+  # Load the table
+  table <- read_excel(input$Data_sampling$datapath, skip =1,
+                      col_names = c("IPP", "PRELEVEMENT",
+                                    "DATE_PRELEVEMENT", "CLUSTER"))
+  
+  # Convert into appropriate type
+  table <- as.data.frame(table %>% mutate(IPP = as.character(IPP),
+                                          PRELEVEMENT = as.factor(PRELEVEMENT),
+                                          DATE_PRELEVEMENT = as.POSIXct(DATE_PRELEVEMENT),
+                                          CLUSTER = as.character(CLUSTER)))
 }
 
 generate_network_data <- function(time_unit, detailed_button, table, 
