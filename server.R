@@ -187,36 +187,7 @@ server <- function(input, output, session) {
     
     table <- format_moves_table(input$Data_mouvements$datapath) # format moves table
   
-    # Check if NA are present in date and set replacement popup state
-    popup_replace <- if_else(NA %in% table$Fin_séjour, T, F)
-    replacement_number <- nrow(unique(table[is.na(table$Fin_séjour),"IPP"]))
-    
-    # Identify rows where "Fin_séjour" is NA and replace "Fin_mouvement" if applicable
-    table <- table %>%
-      mutate(Fin_mouvement = if_else(
-        is.na(Fin_séjour) & (IPP != lead(IPP, default = "")), # Condition: Fin_séjour is NA and IPP is not equal to the next row
-        as.POSIXct(Sys.Date()),                               # Action: Replace Fin_mouvement with today's date as POSIXct
-        Fin_mouvement                                         # Otherwise, keep the existing value
-      ))
-    
-    # Replace "Fin_mouvement" for the last row if "Fin_séjour" is NA
-    table <- table %>%
-      mutate(Fin_mouvement = if_else(
-        is.na(Fin_séjour) & row_number() == nrow(table),      # Condition: Fin_séjour is NA and it's the last row
-        as.POSIXct(Sys.Date()),                               # Action: Replace Fin_mouvement with today's date as POSIXct
-        Fin_mouvement                                         # Otherwise, keep the existing value
-      ))
-    
-    # Pop-up if replacements occurred
-    if (popup_replace){
-      show_alert(title="Date(s) manquante(s)",
-                 type="info",
-                 closeOnClickOutside = T,
-                 text=paste0(replacement_number, " séjour(s) sans date de sortie. La date du jour sera utilisée."))
-    }
-    
-    # Remove useless columns
-    table <- subset(table, select = -c(Séjour, Début_séjour, Fin_séjour, Durée_mouvement))
+    table <- replace_no_end(table) # replace end date for stays without end date
     
     # Update date range widget
     updateDateRangeInput(session, "DateRange", start=min(table$Début_mouvement)-150000, 
