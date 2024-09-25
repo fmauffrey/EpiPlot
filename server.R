@@ -185,9 +185,11 @@ server <- function(input, output, session) {
   # Load patient table ########################################################
   raw_data <- reactive({
     
-    table <- format_moves_table(input$Data_mouvements$datapath) # format moves table
+    # Format moves table
+    table <- format_moves_table(input$Data_mouvements$datapath) 
   
-    table <- replace_no_end(table) # replace end date for stays without end date
+    # Replace end date for stays without end date
+    table <- replace_no_end(table)
     
     # Update date range widget
     updateDateRangeInput(session, "DateRange", start=min(table$Début_mouvement)-150000, 
