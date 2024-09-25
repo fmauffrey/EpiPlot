@@ -65,6 +65,21 @@ replace_no_end <- function(input_table){
   return(new_table)
 }
 
+update_patients_widgets <- function(session, input_table){
+  # Update patient picker and selected patients widgets
+  
+  patients_list <- levels(factor(input_table$IPP))
+  updatePickerInput(session, "patientPicker", choices = patients_list,
+                    selected = patients_list,
+                    choicesOpt = list(style = rep("color:black;", length(patients_list))))
+  updatePickerInput(session, "highlightPicker", choices = patients_list,
+                    selected = NA,
+                    choicesOpt = list(style = rep("color:black;", length(patients_list))))
+  updatePickerInput(session, "findPatient_network", choices = patients_list,
+                    selected = NA,
+                    choicesOpt = list(style = rep("color:black;", length(patients_list))))
+}
+
 generate_network_data <- function(time_unit, detailed_button, table, 
                                   network_unit, colors_vector, 
                                   indirect_time=14, length_edges=150,

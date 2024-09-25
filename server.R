@@ -193,17 +193,8 @@ server <- function(input, output, session) {
     updateDateRangeInput(session, "DateRange", start=min(table$Début_mouvement)-150000, 
                          end=max(table$Fin_mouvement)+150000)
     
-    # Update patient picker and selected patients widgets
-    patients_list <- levels(factor(table$IPP))
-    updatePickerInput(session, "patientPicker", choices = patients_list,
-                      selected = patients_list,
-                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
-    updatePickerInput(session, "highlightPicker", choices = patients_list,
-                      selected = NA,
-                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
-    updatePickerInput(session, "findPatient_network", choices = patients_list,
-                      selected = NA,
-                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
+    # Update all widgets based on patients list
+    update_patients_widgets(session, table)
     
     return(table)
   })
@@ -302,16 +293,7 @@ server <- function(input, output, session) {
                          end=max(table$Fin_mouvement)+150000)
     
     # Update patient picker and highlighted patients widgets
-    patients_list <- levels(factor(table$IPP))
-    updatePickerInput(session, "patientPicker", choices = patients_list,
-                      selected = patients_list,
-                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
-    updatePickerInput(session, "highlightPicker", choices = patients_list,
-                      selected = NA,
-                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
-    updatePickerInput(session, "findPatient_network", choices = patients_list,
-                      selected = NA,
-                      choicesOpt = list(style = rep("color:black;", length(patients_list))))
+    update_patients_widgets(session, table)
 
     return(table)
   })
