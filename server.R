@@ -224,16 +224,8 @@ server <- function(input, output, session) {
     # Add genotype column and create the final table
     complete_table <-add_genotype(moves_table, samplings_table)
 
-    # Import genotype count table and create variables for the picker
-    genotype_count_table <- genotype_count_table(complete_table)
-    genotype_id <- genotype_count_table$DLST
-    names(genotype_id) <- paste0(genotype_count_table$DLST, " (", genotype_count_table$Count ,")")
-    
-    # Update genotype picker widget
-    updatePickerInput(session, "genotypePicker", 
-                      choices = genotype_id,
-                      selected = genotype_id[1],
-                      choicesOpt = list(style = rep("color:black;", length(genotype_id))))
+    # Count sample per genotype and update the picker widget
+    update_genotype_picker_with_count(session, complete_table)
     
     # Add the sampling ordering choice in sorting widget
     updateSelectInput(session, "ganttOrder",

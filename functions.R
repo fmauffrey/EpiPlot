@@ -374,3 +374,17 @@ add_genotype <- function(moves_table, samplings_table){
   
   return(complete_table)
 }
+
+update_genotype_picker_with_count <- function(session, table){
+  
+  # Import genotype count table and create variables for the picker
+  genotype_count_table <- genotype_count_table(table)
+  genotype_id <- genotype_count_table$DLST
+  names(genotype_id) <- paste0(genotype_count_table$DLST, " (", genotype_count_table$Count ,")")
+  
+  # Update genotype picker widget
+  updatePickerInput(session, "genotypePicker", 
+                    choices = genotype_id,
+                    selected = genotype_id[1],
+                    choicesOpt = list(style = rep("color:black;", length(genotype_id))))
+}
