@@ -363,7 +363,7 @@ server <- function(input, output, session) {
     }
     
     # Selection of the axis scale
-    if (input$scaleType == "semester"){
+    if (input$scaleType == "semester") {
       scale_axis <- "3 months"
     } else {
       scale_axis <- paste("1", input$scaleType)
@@ -371,21 +371,22 @@ server <- function(input, output, session) {
     plot <- plot + scale_x_datetime(date_breaks = scale_axis)
     
     # Adapt legend title
-    plot <- plot + labs(color=input$selectedUnit)
+    plot <- plot + labs(color = input$selectedUnit)
     
     # Change font for selected patients
     # Original IPP order is saved because gsub change factors for character and
     # looses the order chosen before
     initial_order <- levels(as.factor(plot$data$IPP))
     selected_patients <- input$highlightPicker
-    if (length(selected_patients)>0){
-      for (p in selected_patients){
+    if (length(selected_patients) > 0) {
+      for (p in selected_patients) {
         plot$data$IPP <- gsub(p, paste0("<b>", p, "</b>"), plot$data$IPP)
         initial_order <- gsub(p, paste0("<b>", p, "</b>"), initial_order)
-        if (!is.null(input$Data_sampling)) plot$layers[[2]]$data$IPP <- gsub(p, paste0("<b>", p, "</b>"), plot$layers[[2]]$data$IPP)
+        if (!is.null(input$Data_sampling))
+          plot$layers[[2]]$data$IPP <- gsub(p, paste0("<b>", p, "</b>"), plot$layers[[2]]$data$IPP)
       }
     }
-    plot$data$IPP <- factor(plot$data$IPP, levels=initial_order)
+    plot$data$IPP <- factor(plot$data$IPP, levels = initial_order)
     
     # Convert to plotly object for displaying in the tab
     tab_plot <- ggplotly(plot, tooltip = "text")
@@ -395,10 +396,10 @@ server <- function(input, output, session) {
     tab_plot$x$layout$legend$title$text <- gsub("<br />", "", tab_plot$x$layout$legend$title$text)
     
     # Change legend groups and modify names
-    for (n in 1:length(tab_plot$x$data)){
+    for (n in 1:length(tab_plot$x$data)) {
       name <- str_extract(tab_plot$x$data[[n]]$name, "[a-zA-Z0-9à-ü]{1,}")
       tab_plot$x$data[[n]]$name <- name
-      if (name %in% c("Positif", "Négatif")){
+      if (name %in% c("Positif", "Négatif")) {
         tab_plot$x$data[[n]]$legendgroup <- name
       } else {
         tab_plot$x$data[[n]]$legendgroup <- "Mouvement"
