@@ -203,39 +203,23 @@ server <- function(input, output, session) {
   
   # Load sampling data and format #############################################
   samplings_table <- reactive({
-    # Load the table
-    table <- read_excel(input$Data_sampling$datapath, skip =1,
-                             col_names = c("IPP", "PRELEVEMENT",
-                                           "DATE_PRELEVEMENT", "CLUSTER"))
     
-    # Convert into appropriate type
-    table <- as.data.frame(table %>% mutate(IPP = as.character(IPP),
-                                                      PRELEVEMENT = as.factor(PRELEVEMENT),
-                                                      DATE_PRELEVEMENT = as.POSIXct(DATE_PRELEVEMENT),
-                                                      CLUSTER = as.character(CLUSTER)))
+    table <- format_samplings_table(input$Data_sampling$datapath)
+
     return(table)
   })
   
   # Add sampling information to the main table ################################
-  sampling_data <- reactive({
+  moves_table_with_samplings <- reactive({
     
-    # Import moves data amnd 
-    
-    # Import raw data table
-    table <- moves_data()
-    
-    table_samp <- samplings_table()
-    
-    # Add the AMBULATOIRE level to the relevant categories
-    levels(table$Département) <- c(levels(table$Département), "AMB")
-    levels(table$Service) <- c(levels(table$Service), "AMB")
-    levels(table$Unité_fonctionelle) <- c(levels(table$Unité_fonctionelle), "AMB")
-    levels(table$Unité_de_soins) <- c(levels(table$Unité_de_soins), "AMB")
+    # Import moves and sampling tables
+    moves_table <- moves_data()
+    samplings_table <- samplings_table()
 
     # Add IPP in main table if no moves for this IPP
-    for (IPP in levels(factor(table_samp$IPP))){
-      if (!(IPP %in% table$IPP)){
-        date = c(table_samp[table_samp$IPP==IPP,"DATE_PRELEVEMENT"])
+    for (IPP in levels(factor(samplings_table$IPP))){
+      if (!(IPP %in% moves_table$IPP)){
+        date = c(samplings_table[samplings_table$IPP==IPP,"DATE_PRELEVEMENT"])
         new_row <- data.frame(IPP=IPP,
                               Début_mouvement=date,
                               fin_mouvement=date,
@@ -243,20 +227,20 @@ server <- function(input, output, session) {
                               Service=NA,
                               Unité_fonctionelle=NA,
                               Unité_de_soins=NA)
-        colnames(new_row) <- colnames(table)
-        table <- rbind.data.frame(table, new_row)
+        colnames(new_row) <- colnames(moves_table)
+        moves_table <- rbind.data.frame(moves_table, new_row)
       }
     }
 
     # Add sampling column
-    table$Génotype <- rep("Aucun", nrow(table))
+    moves_table$Génotype <- rep("Aucun", nrow(moves_table))
 
     # Add the genotype to each IPP when present.
     # Regroups genotypes when multiple. Useless for MRSA as it is already 
     # presented this way but necessary for pseudomonas
-    for (IPP in levels(factor(table_samp$IPP))){
+    for (IPP in levels(factor(samplings_table$IPP))){
       all_genotypes <- c()
-      IPP_table <- table_samp[table_samp$IPP==IPP,]
+      IPP_table <- samplings_table[samplings_table$IPP==IPP,]
       for (row in 1:nrow(IPP_table)){
         IPP_list <- str_split_1(IPP_table[row,"CLUSTER"], ", ")
         for (genotype in IPP_list){
@@ -265,11 +249,11 @@ server <- function(input, output, session) {
           }
         }
       }
-      table[table$IPP==IPP,"Génotype"] <- paste(sort(all_genotypes), collapse = ", ")
+      moves_table[moves_table$IPP==IPP,"Génotype"] <- paste(sort(all_genotypes), collapse = ", ")
     }
 
     # Import genotype count table and create variables for the picker
-    genotype_count_table <- genotype_count_table(table)
+    genotype_count_table <- genotype_count_table(moves_table)
     genotype_id <- genotype_count_table$DLST
     names(genotype_id) <- paste0(genotype_count_table$DLST, " (", genotype_count_table$Count ,")")
     
@@ -285,26 +269,26 @@ server <- function(input, output, session) {
                                      "Admission" = "Début_mouvement", 
                                      "IPP" = "IPP"),
                       selected = "Prelevements")
-    
-    return(table)
+
+    return(moves_table)
   })
   
   # Genotype filtered data ####################################################
   genotype_filtered_data <- reactive({
     
     # Import the table with the genotype information added
-    table <- sampling_data()
+    table <- moves_table_with_samplings()
     
     # Filter the table with the selected genotype
     table <- table[grep(input$genotypePicker, table$Génotype),]
-    
+
     # Update date range widget
     updateDateRangeInput(session, "DateRange", start=min(table$Début_mouvement)-150000, 
                          end=max(table$Fin_mouvement)+150000)
     
     # Update patient picker and highlighted patients widgets
     update_patients_widgets(session, table)
-
+    
     return(table)
   })
   
@@ -337,9 +321,9 @@ server <- function(input, output, session) {
       sample_table <- sampling_data_plot()
       sample_table_first_pos <- sample_table %>% 
         dplyr::group_by(IPP) %>%
-        dplyr::filter(Prélèvements == "Positif") %>%
+        dplyr::filter(PRELEVEMENT == "Positif") %>%
         dplyr::filter(DATE_PRELEVEMENT == min(DATE_PRELEVEMENT)) %>%
-        dplyr::ungroup() %>%
+            dplyr::ungroup() %>%
         dplyr::distinct()
       no_pos <- setdiff(sample_table$IPP, sample_table_first_pos$IPP)
       new_order <- c(sample_table_first_pos$IPP[order(sample_table_first_pos$DATE_PRELEVEMENT)], no_pos)
@@ -353,28 +337,20 @@ server <- function(input, output, session) {
   sampling_data_plot <- reactive({
     
     # Load the table
-    table_samp <- read_excel(input$Data_sampling$datapath, skip =1,
-                             col_names = c("IPP", "Prélèvements",
-                                           "DATE_PRELEVEMENT", "CLUSTER"))
-    
-    # Convert into appropriate type
-    table_samp <- as.data.frame(table_samp %>% mutate(IPP = as.character(IPP),
-                                                      Prélèvements = as.character(Prélèvements),
-                                                      DATE_PRELEVEMENT = as.POSIXct(DATE_PRELEVEMENT),
-                                                      CLUSTER = as.character(CLUSTER)))
+    table_samp <- samplings_table()
     
     # Change text for sampling
-    table_samp[table_samp$Prélèvements=="POSITIVE","Prélèvements"] <- "Positif"
-    table_samp[table_samp$Prélèvements=="NEGATIVE","Prélèvements"] <- "Négatif"
+    table_samp[table_samp$PRELEVEMENT=="POSITIVE","PRELEVEMENT"] <- "Positif"
+    table_samp[table_samp$PRELEVEMENT=="NEGATIVE","PRELEVEMENT"] <- "Négatif"
     
-    # Filter by genotype (spurtious spaces removed before grep CORRECT ERROR SOURCE)
+    # Filter by genotype (spurious spaces removed before grep CORRECT ERROR SOURCE)
     selected_gentotype <- gsub(" ", "", input$genotypePicker)
     table_samp <- table_samp[grep(selected_gentotype, table_samp$CLUSTER),]
     
     # Filter by date
     table_samp <- table_samp[(which(table_samp$DATE_PRELEVEMENT>=as.POSIXct(input$DateRange[1]))),]
     table_samp <- table_samp[(which(table_samp$DATE_PRELEVEMENT<=as.POSIXct(input$DateRange[2]))),]
-    
+
     # Filter by patient
     table_samp <- table_samp[which(table_samp$IPP %in% input$patientPicker),]
 
@@ -390,7 +366,7 @@ server <- function(input, output, session) {
     
     # Import filtered data 
     plot_data <- as.data.frame(filtered_data())
-    
+
     # Main plot
     plot <- ggplot(plot_data, 
                    aes(x=Début_mouvement, xend=Fin_mouvement, y=IPP, yend=IPP, 
@@ -428,10 +404,10 @@ server <- function(input, output, session) {
       # Add columns for shape and colors
       plot <- plot + geom_point(data = sampling_data, 
                                 aes(x=DATE_PRELEVEMENT, y=IPP, 
-                                    shape=Prélèvements, fill=Prélèvements,
+                                    shape=PRELEVEMENT, fill=PRELEVEMENT,
                                     text = paste0("IPP: ",IPP,
                                                   "\nDate de prélèvement: ",DATE_PRELEVEMENT,
-                                                  "\n", Prélèvements)), 
+                                                  "\n", PRELEVEMENT)), 
                                 size=input$DotSize, inherit.aes = F) + 
         scale_shape_manual(values=c(23, 21), breaks = c("Positif", "Négatif")) + 
         scale_fill_manual(values=c("#d4171e", "#17d417"), breaks = c("Positif", "Négatif"))
@@ -451,7 +427,7 @@ server <- function(input, output, session) {
     # Change font for selected patients
     # Original IPP order is saved because gsub change factors for character and
     # looses the order chosen before
-    initial_order <- levels(plot$data$IPP)
+    initial_order <- levels(as.factor(plot$data$IPP))
     selected_patients <- input$highlightPicker
     if (length(selected_patients)>0){
       for (p in selected_patients){

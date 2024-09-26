@@ -80,18 +80,20 @@ update_patients_widgets <- function(session, input_table){
                     choicesOpt = list(style = rep("color:black;", length(patients_list))))
 }
 
-format_samplings_table(input_table){
+format_samplings_table <- function(input_table_path){
   
   # Load the table
-  table <- read_excel(input$Data_sampling$datapath, skip =1,
+  table <- read_excel(input_table_path, skip =1,
                       col_names = c("IPP", "PRELEVEMENT",
                                     "DATE_PRELEVEMENT", "CLUSTER"))
   
   # Convert into appropriate type
   table <- as.data.frame(table %>% mutate(IPP = as.character(IPP),
-                                          PRELEVEMENT = as.factor(PRELEVEMENT),
+                                          PRELEVEMENT = as.character(PRELEVEMENT),
                                           DATE_PRELEVEMENT = as.POSIXct(DATE_PRELEVEMENT),
                                           CLUSTER = as.character(CLUSTER)))
+  
+  return(table)
 }
 
 generate_network_data <- function(time_unit, detailed_button, table, 
