@@ -322,3 +322,33 @@ nested_list_to_df <- function(nested_list) {
   df <- do.call(rbind, lapply(rows, as.data.frame))
   return(df)
 }
+
+add_missing_ipp <- function(moves_table, samplings_table){
+  # Add IPP with samplings but no move to the moves table
+  
+  # Get the unique IPPs from samplings_table that are not present in moves_table
+  missing_IPPs <- setdiff(unique(samplings_table$IPP), moves_table$IPP)
+  
+  # Subset the samplings_table for the missing IPPs
+  if (length(missing_IPPs) > 0) {
+    new_rows <- samplings_table[samplings_table$IPP %in% missing_IPPs, c("IPP", "DATE_PRELEVEMENT")]
+    
+    # Create a new data frame with the same columns as moves_table
+    new_rows <- data.frame(IPP = new_rows$IPP,
+                           Début_mouvement = new_rows$DATE_PRELEVEMENT,
+                           fin_mouvement = new_rows$DATE_PRELEVEMENT,
+                           Département = NA,
+                           Service = NA,
+                           Unité_fonctionelle = NA,
+                           Unité_de_soins = NA,
+                           stringsAsFactors = FALSE)
+    
+    # Ensure the column names match those of moves_table
+    colnames(new_rows) <- colnames(moves_table)
+    
+    # Bind the new rows to the existing moves_table
+    moves_table <- rbind(moves_table, new_rows)
+  }
+  
+  return(moves_table)
+}

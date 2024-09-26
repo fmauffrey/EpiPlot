@@ -217,22 +217,9 @@ server <- function(input, output, session) {
     # Import moves and sampling tables
     moves_table <- moves_data()
     samplings_table <- samplings_table()
-
-    # Add IPP in main table if no moves for this IPP
-    for (IPP in levels(factor(samplings_table$IPP))){
-      if (!(IPP %in% moves_table$IPP)){
-        date = c(samplings_table[samplings_table$IPP==IPP,"DATE_PRELEVEMENT"])
-        new_row <- data.frame(IPP=IPP,
-                              Début_mouvement=date,
-                              fin_mouvement=date,
-                              Département=NA,
-                              Service=NA,
-                              Unité_fonctionelle=NA,
-                              Unité_de_soins=NA)
-        colnames(new_row) <- colnames(moves_table)
-        moves_table <- rbind.data.frame(moves_table, new_row)
-      }
-    }
+    
+    # Add IPP with samplings but no moves
+    moves_table <- add_missing_ipp(moves_table, samplings_table)
 
     # Add genotype column and create the final table
     complete_table <- cbind.data.frame(moves_table, Génotype=rep("Aucun", nrow(moves_table)))
