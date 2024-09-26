@@ -24,8 +24,8 @@ server <- function(input, output, session) {
   # Manual date range update buttons - Reset
   observeEvent(input$bttnDateFilterReset, {
     if (!is.null(input$Data_mouvements)){
-      min_date <- min(moves_data()$Début_mouvement)
-      max_date <- max(moves_data()$Fin_mouvement)
+      min_date <- min(moves_table()$Début_mouvement)
+      max_date <- max(moves_table()$Fin_mouvement)
       # The table loaded changes if sampling data loaded or not
       if (is.null(input$Data_sampling)){
         updateDateRangeInput(session, "DateRange", start=min_date-150000, end=max_date+150000)
@@ -183,7 +183,7 @@ server <- function(input, output, session) {
   })
   
   # Load moves table and format ###############################################
-  moves_data <- reactive({
+  moves_table <- reactive({
     
     # Format moves table
     table <- format_moves_table(input$Data_mouvements$datapath) 
@@ -215,7 +215,7 @@ server <- function(input, output, session) {
   moves_table_with_samplings <- reactive({
     
     # Import moves and sampling tables
-    moves_table <- moves_data()
+    moves_table <- moves_table()
     samplings_table <- samplings_table()
     
     # Add IPP with samplings but no moves
@@ -261,7 +261,7 @@ server <- function(input, output, session) {
     
     # Load table depending if sampling data was given or not
     if (is.null(input$Data_sampling)){
-      data_table <- as.data.frame(moves_data())
+      data_table <- as.data.frame(moves_table())
     } else {
       data_table <- as.data.frame(genotype_filtered_data())
     }
