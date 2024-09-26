@@ -292,8 +292,9 @@ genotype_count_table <- function(table){
   return(ST_count)
 }
 
-# Define a function to convert a nested list to a data frame
 nested_list_to_df <- function(nested_list) {
+  # Define a function to convert a nested list to a data frame
+  
   # Initialize an empty list to store data frame rows
   rows <- list()
   
