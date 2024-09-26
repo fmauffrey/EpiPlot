@@ -1,6 +1,6 @@
 # Server ######################################################################
 server <- function(input, output, session) {
-  
+
   # call the server part
   # check_credentials returns a function to authenticate users
   res_auth <- secure_server(
@@ -185,6 +185,12 @@ server <- function(input, output, session) {
   # Load moves table and format ###############################################
   moves_table <- reactive({
     
+    # Check if right file is loaded
+    req(input$Data_mouvements)
+    if (is.null(check_moves_table(input$Data_mouvements))){
+      return(NULL)
+    }
+
     # Format moves table
     table <- format_moves_table(input$Data_mouvements$datapath) 
   
@@ -258,7 +264,7 @@ server <- function(input, output, session) {
   
   # Date, patient, unit filter data ###########################################
   final_table <- reactive({
-    
+
     # Load table depending if sampling data was given or not
     if (is.null(input$Data_sampling)){
       data_table <- as.data.frame(moves_table())
@@ -311,12 +317,12 @@ server <- function(input, output, session) {
     # Import filtered data 
     plot_data <- as.data.frame(final_table())
     
-    # Order IPP according ot user choice
+    # Order IPP according of user choice
     plot_data <- order_plot_data(plot_data=plot_data,
                                  samplings_data=sampling_data_plot(),
                                  user_choice=input$ganttOrder)
     
-        # Main plot
+    # Main plot
     plot <- ggplot(plot_data, 
                    aes(x=Début_mouvement, xend=Fin_mouvement, y=IPP, yend=IPP, 
                        color=plot_data[,input$selectedUnit],
@@ -460,14 +466,15 @@ server <- function(input, output, session) {
       visInteraction(multiselect = T)
   })
   
-  # Display moves if table loaded
+  # Display of the different tables and plots #################################
+  
+  # Display moves plot
   output$timeline <- renderPlotly({
+    # If moves have been loaded, at least
     if (is.null(input$Data_mouvements))
       return(NULL)
     
     moves_plot() %>%
-      
-    # Modify plotly parameters to display
       config(moves_plot(),
              toImageButtonOptions= list(filename = paste0(as.character(input$genotypePicker),
                                                           "_",
@@ -476,11 +483,16 @@ server <- function(input, output, session) {
              displaylogo = F)
   })
   
-  # Display Network
+  # Display network
   output$network <- renderVisNetwork({network_plot()})
   
-  # Display table
+  # Display moves table
   output$table <- renderUI({
+
+    if (is.null(moves_table())){
+      return(NULL)
+    }
+    
     if (is.null(input$Data_mouvements))
       return(NULL)
     

@@ -388,3 +388,31 @@ update_genotype_picker_with_count <- function(session, table){
                     selected = genotype_id[1],
                     choicesOpt = list(style = rep("color:black;", length(genotype_id))))
 }
+
+check_moves_table <- function(input_file){
+  # Load and check the formatting of the table
+  
+  # Check extension
+  ext <- tools::file_ext(input_file$name)
+  if (!ext %in% c("xlsx", "xls")) {
+    show_alert(title="Erreur de chargement",
+               type="error",
+               closeOnClickOutside = T,
+               text="Mauvaise extension")
+    return(NULL)
+  }
+  
+  # Check data
+  moves_table <- read_excel(input_file$datapath, skip = 7)
+  rows_number <- nrow(moves_table) - 2 # 2 useless rows at the end
+  
+  if (ncol(moves_table) != 11){
+    show_alert(title="Erreur de chargement",
+               type="error",
+               closeOnClickOutside = T,
+               text=paste0("Fichier incorrect. Nombre de colonnes = ", ncol(moves_table), " (Requis 11)"))
+    return(NULL)
+  }
+  
+  return("OK")
+}
