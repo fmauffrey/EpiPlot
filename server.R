@@ -222,24 +222,7 @@ server <- function(input, output, session) {
     moves_table <- add_missing_ipp(moves_table, samplings_table)
 
     # Add genotype column and create the final table
-    complete_table <- cbind.data.frame(moves_table, Génotype=rep("Aucun", nrow(moves_table)))
-
-    # Add the genotype to each IPP when present.
-    # Regroups genotypes when multiple. Useless for MRSA as it is already 
-    # presented this way but necessary for pseudomonas
-    for (IPP in levels(factor(samplings_table$IPP))){
-      all_genotypes <- c()
-      IPP_table <- samplings_table[samplings_table$IPP==IPP,]
-      for (row in 1:nrow(IPP_table)){
-        IPP_list <- str_split_1(IPP_table[row,"CLUSTER"], ", ")
-        for (genotype in IPP_list){
-          if (!genotype %in% all_genotypes){
-            all_genotypes <- c(all_genotypes, genotype)
-          }
-        }
-      }
-      complete_table[complete_table$IPP==IPP,"Génotype"] <- paste(sort(all_genotypes), collapse = ", ")
-    }
+    complete_table <-add_genotype(moves_table, samplings_table)
 
     # Import genotype count table and create variables for the picker
     genotype_count_table <- genotype_count_table(complete_table)

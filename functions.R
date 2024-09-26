@@ -352,3 +352,25 @@ add_missing_ipp <- function(moves_table, samplings_table){
   
   return(moves_table)
 }
+
+add_genotype <- function(moves_table, samplings_table){
+  # Add genotype to each IPP
+  
+  # Add genotype column and create the final table
+  complete_table <- moves_table %>%
+    mutate(Génotype = "Aucun")
+  
+  # Process genotypes for each IPP
+  genotype_data <- samplings_table %>%
+    group_by(IPP) %>%
+    summarize(Génotype = paste(sort(unique(unlist(str_split(CLUSTER, ", ")))), collapse = ", ")) %>%
+    ungroup()
+  
+  # Merge the genotype information into the complete_table
+  complete_table <- complete_table %>%
+    left_join(genotype_data, by = "IPP") %>%
+    mutate(Génotype = coalesce(Génotype.y, Génotype.x)) %>%
+    select(-Génotype.x, -Génotype.y)
+  
+  return(complete_table)
+}
