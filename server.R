@@ -117,7 +117,7 @@ server <- function(input, output, session) {
     if (!is.null(input$Data_mouvements)){
       if (input$update_edges_button=="Avec"){
       # Import table
-      table <- filtered_data()
+      table <- final_table()
       number_units <- length(levels(factor(table[,input$selectedUnit])))
       
       # Define colors depending on the number of different units
@@ -238,7 +238,7 @@ server <- function(input, output, session) {
   })
   
   # Genotype filtered data ####################################################
-  genotype_filtered_data <- reactive({
+  genotype_filtered_table <- reactive({
     
     # Import the table with the genotype information added
     table <- moves_table_with_samplings()
@@ -257,24 +257,24 @@ server <- function(input, output, session) {
   })
   
   # Date, patient, unit filter data ###########################################
-  filtered_data <- reactive({
+  final_table <- reactive({
     
     # Load table depending if sampling data was given or not
     if (is.null(input$Data_sampling)){
       data_table <- as.data.frame(moves_table())
     } else {
-      data_table <- as.data.frame(genotype_filtered_data())
+      data_table <- as.data.frame(genotype_filtered_table())
     }
 
     # Filter by date
-    filt_data <- filter_by_date(table = data_table,
+    final_table <- filter_by_date(table = data_table,
                                 start = as.POSIXct(input$DateRange[1]), 
                                 end = as.POSIXct(input$DateRange[2]))
     
     # Filter by patient 
-    filt_data <- filt_data[which(filt_data$IPP %in% input$patientPicker),]
+    final_table <- final_table[which(final_table$IPP %in% input$patientPicker),]
 
-    return(filt_data)
+    return(final_table)
   })
   
   # Return the filtered sampling data for Gantt plot ##########################
@@ -309,7 +309,7 @@ server <- function(input, output, session) {
       return(NULL)
     
     # Import filtered data 
-    plot_data <- as.data.frame(filtered_data())
+    plot_data <- as.data.frame(final_table())
     
     # Order IPP according ot user choice
     plot_data <- order_plot_data(plot_data=plot_data,
@@ -416,7 +416,7 @@ server <- function(input, output, session) {
       return(NULL)
     
     # Import table
-    table <- filtered_data()
+    table <- final_table()
     number_units <- length(levels(factor(table[,input$selectedUnit])))
     
     # Define colors depending on the number of different units
@@ -483,7 +483,7 @@ server <- function(input, output, session) {
     if (is.null(input$Data_mouvements))
       return(NULL)
     
-    table <- filtered_data()
+    table <- final_table()
 
     # Formatting table before displaying
     table <- table %>% mutate(Début_mouvement = format(Début_mouvement, "%Y-%m-%d %H:%M:%S"),
