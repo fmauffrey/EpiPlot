@@ -192,7 +192,9 @@ server <- function(input, output, session) {
     table <- replace_no_end(table)
     
     # Update date range widget
-    updateDateRangeInput(session, "DateRange", start=min(table$Début_mouvement)-150000, 
+    updateDateRangeInput(session, 
+                         "DateRange", 
+                         start=min(table$Début_mouvement)-150000, 
                          end=max(table$Fin_mouvement)+150000)
     
     # Update all widgets based on patients list
@@ -232,8 +234,8 @@ server <- function(input, output, session) {
       }
     }
 
-    # Add sampling column
-    moves_table$Génotype <- rep("Aucun", nrow(moves_table))
+    # Add genotype column and create the final table
+    complete_table <- cbind.data.frame(moves_table, Génotype=rep("Aucun", nrow(moves_table)))
 
     # Add the genotype to each IPP when present.
     # Regroups genotypes when multiple. Useless for MRSA as it is already 
@@ -249,11 +251,11 @@ server <- function(input, output, session) {
           }
         }
       }
-      moves_table[moves_table$IPP==IPP,"Génotype"] <- paste(sort(all_genotypes), collapse = ", ")
+      complete_table[complete_table$IPP==IPP,"Génotype"] <- paste(sort(all_genotypes), collapse = ", ")
     }
 
     # Import genotype count table and create variables for the picker
-    genotype_count_table <- genotype_count_table(moves_table)
+    genotype_count_table <- genotype_count_table(complete_table)
     genotype_id <- genotype_count_table$DLST
     names(genotype_id) <- paste0(genotype_count_table$DLST, " (", genotype_count_table$Count ,")")
     
@@ -270,7 +272,7 @@ server <- function(input, output, session) {
                                      "IPP" = "IPP"),
                       selected = "Prelevements")
 
-    return(moves_table)
+    return(complete_table)
   })
   
   # Genotype filtered data ####################################################
@@ -301,7 +303,7 @@ server <- function(input, output, session) {
     } else {
       data_table <- as.data.frame(genotype_filtered_data())
     }
-    
+
     # Filter by date
     filt_data <- filter_by_date(table = data_table,
                                 start = as.POSIXct(input$DateRange[1]), 
@@ -309,26 +311,6 @@ server <- function(input, output, session) {
     
     # Filter by patient 
     filt_data <- filt_data[which(filt_data$IPP %in% input$patientPicker),]
-    
-    # Changing samples order for plot
-    order_var <- input$ganttOrder
-    new_order <- NA
-    if (order_var == "IPP"){
-      new_order <- unique(sort(filt_data$IPP))
-    } else if (order_var == "Début_mouvement") {
-      new_order <-  unique(filt_data$IPP[order(filt_data$Début_mouvement)])
-    } else if (order_var == "Prelevements") {
-      sample_table <- sampling_data_plot()
-      sample_table_first_pos <- sample_table %>% 
-        dplyr::group_by(IPP) %>%
-        dplyr::filter(PRELEVEMENT == "Positif") %>%
-        dplyr::filter(DATE_PRELEVEMENT == min(DATE_PRELEVEMENT)) %>%
-            dplyr::ungroup() %>%
-        dplyr::distinct()
-      no_pos <- setdiff(sample_table$IPP, sample_table_first_pos$IPP)
-      new_order <- c(sample_table_first_pos$IPP[order(sample_table_first_pos$DATE_PRELEVEMENT)], no_pos)
-    }
-    filt_data$IPP <- factor(filt_data$IPP, levels = new_order)
 
     return(filt_data)
   })
@@ -366,8 +348,13 @@ server <- function(input, output, session) {
     
     # Import filtered data 
     plot_data <- as.data.frame(filtered_data())
-
-    # Main plot
+    
+    # Order IPP according ot user choice
+    plot_data <- order_plot_data(plot_data=plot_data,
+                                 samplings_data=sampling_data_plot(),
+                                 user_choice=input$ganttOrder)
+    
+        # Main plot
     plot <- ggplot(plot_data, 
                    aes(x=Début_mouvement, xend=Fin_mouvement, y=IPP, yend=IPP, 
                        color=plot_data[,input$selectedUnit],
@@ -535,12 +522,12 @@ server <- function(input, output, session) {
       return(NULL)
     
     table <- filtered_data()
-    
+
     # Formatting table before displaying
     table <- table %>% mutate(Début_mouvement = format(Début_mouvement, "%Y-%m-%d %H:%M:%S"),
                               Fin_mouvement = format(Fin_mouvement, "%Y-%m-%d %H:%M:%S"))
     colnames(table) <- gsub("_", " ", colnames(table))
-    
+
     box(width = NULL,
         DT::renderDT(table,
                      options = list(pageLength = 18,

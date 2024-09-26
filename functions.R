@@ -96,6 +96,42 @@ format_samplings_table <- function(input_table_path){
   return(table)
 }
 
+order_plot_data <- function(plot_data, samplings_data, user_choice){
+  # Change IPP order for Gantt plot
+  
+  # Define IPP order based on user choice
+  new_order <- NA
+  
+  # Order by IPP
+  if (user_choice == "IPP"){
+    new_order <- unique(sort(plot_data$IPP))
+    
+    # Order by older move
+  } else if (user_choice == "Début_mouvement") {
+    new_order <-  unique(plot_data$IPP[order(plot_data$Début_mouvement)])
+    
+    # Order by first positive sample
+  } else if (user_choice == "Prelevements") {
+    sample_table_first_pos <- samplings_data %>%
+      dplyr::group_by(IPP) %>%
+      dplyr::filter(PRELEVEMENT == "Positif") %>%
+      dplyr::filter(DATE_PRELEVEMENT == min(DATE_PRELEVEMENT)) %>%
+      dplyr::ungroup() %>%
+      dplyr::distinct()
+    
+    # Check if patients have moves but no positive sample
+    no_pos <- setdiff(levels(as.factor(plot_data$IPP)), levels(as.factor(samplings_data$IPP)))
+    
+    # Create the new order (adding patients with no positive sample)
+    new_order <- c(sample_table_first_pos$IPP[order(sample_table_first_pos$DATE_PRELEVEMENT)], no_pos)
+  }
+  
+  # Apply new order to the dataframe
+  plot_data$IPP <- factor(plot_data$IPP, levels = new_order)
+  
+  return(plot_data)
+}
+
 generate_network_data <- function(time_unit, detailed_button, table, 
                                   network_unit, colors_vector, 
                                   indirect_time=14, length_edges=150,
