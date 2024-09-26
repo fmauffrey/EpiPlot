@@ -391,7 +391,7 @@ server <- function(input, output, session) {
     tab_plot <- ggplotly(plot, tooltip = "text")
     
     # Change legend title
-    tab_plot$x$layout$legend$title$text <- gsub("Prélèvements", "", tab_plot$x$layout$legend$title$text)
+    tab_plot$x$layout$legend$title$text <- gsub("PRELEVEMENT", "", tab_plot$x$layout$legend$title$text)
     tab_plot$x$layout$legend$title$text <- gsub("<br />", "", tab_plot$x$layout$legend$title$text)
     
     # Change legend groups and modify names
