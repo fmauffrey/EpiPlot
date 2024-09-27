@@ -142,6 +142,9 @@ generate_network_data <- function(time_unit, detailed_button, table,
   data <- as.data.frame(table)
   data$IPP <- as.character(data$IPP)
   
+  # Drop rows with NA in departements (no moves)
+  data <- data[!is.na(data$Département),]
+  
   # Update the different factors levels with the currently selected data
   data <- droplevels(data)
   
