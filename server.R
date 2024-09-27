@@ -12,6 +12,9 @@ server <- function(input, output, session) {
     reactiveValuesToList(res_auth)
   })
   
+  # Disable samplings table loading widget
+  disable("Data_sampling")
+  
   # Global variables and events ###############################################
   
   # Manual date range update buttons - Minus 365 days
@@ -190,6 +193,9 @@ server <- function(input, output, session) {
     if (is.null(check_moves_table(input$Data_mouvements))){
       return(NULL)
     }
+    
+    # Enable samplings table loading
+    enable("Data_sampling")
 
     # Format moves table
     table <- format_moves_table(input$Data_mouvements$datapath) 

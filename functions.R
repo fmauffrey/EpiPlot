@@ -405,12 +405,21 @@ check_moves_table <- function(input_file){
   # Check data
   moves_table <- read_excel(input_file$datapath, skip = 7)
   rows_number <- nrow(moves_table) - 2 # 2 useless rows at the end
+  moves_table <- moves_table[!is.na(moves_table$IPP),]
   
   if (ncol(moves_table) != 11){
     show_alert(title="Erreur de chargement",
                type="error",
                closeOnClickOutside = T,
                text=paste0("Fichier incorrect. Nombre de colonnes = ", ncol(moves_table), " (Requis 11)"))
+    return(NULL)
+  }
+  print(moves_table)
+  if (nrow(moves_table) == 0){
+    show_alert(title="Erreur de chargement",
+               type="error",
+               closeOnClickOutside = T,
+               text="Fichier incorrect. Aucune donnée.")
     return(NULL)
   }
   
