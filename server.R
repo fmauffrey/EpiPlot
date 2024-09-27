@@ -321,6 +321,24 @@ server <- function(input, output, session) {
     return(table_samp)
   })
   
+  # Generate the summary table ################################################
+  get_summary_table <- reactive({
+    
+    # Check if right file is loaded
+    req(input$Data_mouvements)
+    if (is.null(check_moves_table(input$Data_mouvements))){
+      return(NULL)
+    }
+    
+    # Load final moves table
+    table <- as.data.frame(final_table())
+
+    # Calculate statistics
+    summary_table <- summary_table(table)
+
+    return(summary_table)
+  })
+  
   # Moves plot ################################################################
   moves_plot <- reactive({
     
@@ -522,6 +540,9 @@ server <- function(input, output, session) {
       return(NULL)
     
     table <- final_table()
+    
+    # Remove useless columns
+    table <- subset(table, select = -c(Séjour, Début_séjour, Fin_séjour, Durée_mouvement))
 
     # Formatting table before displaying
     table <- table %>% mutate(Début_mouvement = format(Début_mouvement, "%Y-%m-%d %H:%M:%S"),
@@ -536,6 +557,24 @@ server <- function(input, output, session) {
                                     )
                      )
         )
+  })
+  
+  # Display moves table
+  output$summary_table <- renderUI({
+
+    table <- get_summary_table()
+    
+    # Formatting table before displaying
+    colnames(table) <- gsub("_", " ", colnames(table))
+    
+    box(width = NULL,
+        DT::renderDT(table,
+                     options = list(pageLength = 10,
+                                    lengthChange = F,
+                                    searching = F
+                     )
+        )
+    )
   })
   
   # Saving buttons Gantt plot

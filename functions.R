@@ -23,7 +23,8 @@ format_moves_table <- function(input_table_path){
                                         Département = as.factor(Département),
                                         Service = as.factor(Service),
                                         Unité_fonctionelle = as.factor(Unité_fonctionelle),
-                                        Unité_de_soins = as.factor(Unité_de_soins))
+                                        Unité_de_soins = as.factor(Unité_de_soins),
+                                        Durée_mouvement = as.numeric(Durée_mouvement))
   
   return(moves_table)
 }
@@ -58,9 +59,6 @@ replace_no_end <- function(input_table){
       as.POSIXct(Sys.Date()),                               # Action: Replace Fin_mouvement with today's date as POSIXct
       Fin_mouvement                                         # Otherwise, keep the existing value
     ))
-  
-  # Remove useless columns
-  new_table <- subset(new_table, select = -c(Séjour, Début_séjour, Fin_séjour, Durée_mouvement))
   
   return(new_table)
 }
@@ -338,12 +336,16 @@ add_missing_ipp <- function(moves_table, samplings_table){
     
     # Create a new data frame with the same columns as moves_table
     new_rows <- data.frame(IPP = new_rows$IPP,
+                           Séjour = NA,
+                           Début_séjour = new_rows$DATE_PRELEVEMENT,
+                           Fin_séjour = new_rows$DATE_PRELEVEMENT,
                            Début_mouvement = new_rows$DATE_PRELEVEMENT,
                            fin_mouvement = new_rows$DATE_PRELEVEMENT,
                            Département = NA,
                            Service = NA,
                            Unité_fonctionelle = NA,
                            Unité_de_soins = NA,
+                           Durée_mouvement = 0,
                            stringsAsFactors = FALSE)
     
     # Ensure the column names match those of moves_table
@@ -462,4 +464,18 @@ check_samplings_table <- function(input_file){
   }
   
   return("OK")
+}
+
+summary_table <- function(input_table){
+  
+  summary_table <- input_table %>%
+    dplyr::group_by(IPP) %>%
+    dplyr::summarize(Nombre_de_séjours = n_distinct(Séjour),
+                     Départements_visités = n_distinct(Département),
+                     Services_visités = n_distinct(Service),
+                     Unités_fonctionelles_visités = n_distinct(Unité_fonctionelle),
+                     Unités_de_soins_visités = n_distinct(Unité_de_soins),
+                     Temps_total = round(sum(Durée_mouvement, na.rm = T),1))
+  
+  return(summary_table)
 }

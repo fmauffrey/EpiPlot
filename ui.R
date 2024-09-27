@@ -79,9 +79,14 @@ secure_app(language = "fr",
                   tabsetPanel(type = "tabs",
                               selected = "Table",
                               
-                              ########## Table loading tab
+                              ########## Table tab
                               tabPanel("Table", icon = icon("table"),
                                        uiOutput("table")
+                              ),
+                              
+                              ########## Summary tab
+                              tabPanel("Statistiques", icon = icon("table-list"),
+                                       uiOutput("summary_table")
                               ),
                               
                               ############# Gantt tab
