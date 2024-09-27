@@ -466,9 +466,11 @@ check_samplings_table <- function(input_file){
   return("OK")
 }
 
-summary_table <- function(input_table){
-  
-  summary_table <- input_table %>%
+summary_table <- function(moves_table, sampling_table){
+  # Generate the statistics table display in the statistics tab
+
+  # Basic information 
+  summary_table <- moves_table %>%
     dplyr::group_by(IPP) %>%
     dplyr::summarize(Nombre_de_séjours = n_distinct(Séjour),
                      Départements_visités = n_distinct(Département),
@@ -477,5 +479,26 @@ summary_table <- function(input_table){
                      Unités_de_soins_visités = n_distinct(Unité_de_soins),
                      Temps_total = round(sum(Durée_mouvement, na.rm = T),1))
   
+  # Add genotype information if the table is present
+  if (!is.null(sampling_table)){
+    # Count tables for positive and negative samples
+    positive_samples <- sampling_table %>%
+      dplyr::group_by(IPP, PRELEVEMENT) %>%
+      dplyr::summarize(Freq=n()) %>%
+      dplyr::filter(PRELEVEMENT=="POSITIVE") %>%
+      dplyr::select(-PRELEVEMENT) %>%    
+      dplyr::rename(Echantillons_positifs = Freq)
+   
+    negative_samples <- sampling_table %>%
+      dplyr::group_by(IPP, PRELEVEMENT) %>%
+      dplyr::summarize(Freq=n()) %>%
+      dplyr::filter(PRELEVEMENT=="NEGATIVE") %>%
+      dplyr::select(-PRELEVEMENT) %>%    
+      dplyr::rename(Echantillons_négatifs = Freq)
+
+    summary_table <- summary_table %>%
+      dplyr::left_join(positive_samples, by="IPP") %>%
+      dplyr::left_join(negative_samples, by="IPP")
+  }
   return(summary_table)
 }

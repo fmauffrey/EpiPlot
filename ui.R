@@ -86,7 +86,7 @@ secure_app(language = "fr",
                               
                               ########## Summary tab
                               tabPanel("Statistiques", icon = icon("table-list"),
-                                       uiOutput("summary_table")
+                                       uiOutput("summary_table"),
                               ),
                               
                               ############# Gantt tab

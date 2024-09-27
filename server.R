@@ -255,7 +255,7 @@ server <- function(input, output, session) {
     return(complete_table)
   })
   
-  # Genotype filtered data ####################################################
+  # Generate the genotype filtered table ######################################
   genotype_filtered_table <- reactive({
     
     # Import the table with the genotype information added
@@ -274,7 +274,7 @@ server <- function(input, output, session) {
     return(table)
   })
   
-  # Date, patient, unit filter data ###########################################
+  # Generate final table (Date, patient, unit filter data) ####################
   final_table <- reactive({
 
     # Load table depending if sampling data was given or not
@@ -323,29 +323,26 @@ server <- function(input, output, session) {
   
   # Generate the summary table ################################################
   get_summary_table <- reactive({
-    
-    # Check if right file is loaded
-    req(input$Data_mouvements)
-    if (is.null(check_moves_table(input$Data_mouvements))){
-      return(NULL)
-    }
+    # Create the table displayed in the statistics tab
     
     # Load final moves table
     table <- as.data.frame(final_table())
-
-    # Calculate statistics
-    summary_table <- summary_table(table)
+    
+    # Calculate statistics depending on sampling data
+    if (is.null(input$Data_sampling)) {
+      summary_table <- summary_table(table, NULL)
+    } else if (is.null(check_samplings_table(input$Data_sampling))) {
+      summary_table <- summary_table(table, NULL)
+    } else {
+      summary_table <- summary_table(table, samplings_table())
+    }
 
     return(summary_table)
   })
   
   # Moves plot ################################################################
   moves_plot <- reactive({
-    
-    # Return nothing if no data loaded
-    if (is.null(input$Data_mouvements))
-      return(NULL)
-    
+
     # Import filtered data 
     plot_data <- as.data.frame(final_table())
     
@@ -506,10 +503,9 @@ server <- function(input, output, session) {
   output$timeline <- renderPlotly({
     
     # If moves have been loaded, at least and is not null
-    if (is.null(input$Data_mouvements))
+    if (is.null(input$Data_mouvements)) {
       return(NULL)
-    
-    if (is.null(moves_table())){
+    } else if (is.null(moves_table())){
       return(NULL)
     }
     
@@ -518,7 +514,6 @@ server <- function(input, output, session) {
              toImageButtonOptions= list(filename = paste0(as.character(input$genotypePicker),
                                                           "_",
                                                           format(Sys.time(), "%e-%m-%y"))),
-             edits=list(legendPosition = T),
              displaylogo = F)
   })
   
@@ -532,12 +527,12 @@ server <- function(input, output, session) {
   # Display moves table
   output$table <- renderUI({
 
-    if (is.null(moves_table())){
+    # If moves have been loaded, at least and is not null
+    if (is.null(input$Data_mouvements)) {
+      return(NULL)
+    } else if (is.null(moves_table())){
       return(NULL)
     }
-    
-    if (is.null(input$Data_mouvements))
-      return(NULL)
     
     table <- final_table()
     
@@ -559,8 +554,15 @@ server <- function(input, output, session) {
         )
   })
   
-  # Display moves table
+  # Display statistics table
   output$summary_table <- renderUI({
+
+    # If moves have been loaded, at least and is not null
+    if (is.null(input$Data_mouvements)) {
+      return(NULL)
+    } else if (is.null(moves_table())){
+      return(NULL)
+    }
 
     table <- get_summary_table()
     
@@ -569,7 +571,7 @@ server <- function(input, output, session) {
     
     box(width = NULL,
         DT::renderDT(table,
-                     options = list(pageLength = 10,
+                     options = list(pageLength = 18,
                                     lengthChange = F,
                                     searching = F
                      )
