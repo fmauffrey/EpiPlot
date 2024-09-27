@@ -49,7 +49,7 @@ secure_app(language = "fr",
                 dashboardSidebar(
                   sidebarMenu(
                     id = "SideBar",
-                    menuItem("Fichiers", icon = icon("file"),
+                    menuItem("Fichiers", icon = icon("file"), startExpanded = TRUE,
                              fileInput("Data_mouvements", "Table des mouvements", accept=c(".xls", ".xlsx"),
                                        buttonLabel ="Parcourir...", placeholder = "Aucun fichier"),
                              fileInput("Data_sampling", "Table des prélèvements", accept=c(".xls", ".xlsx"),
