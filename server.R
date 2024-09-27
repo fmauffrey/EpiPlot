@@ -211,12 +211,18 @@ server <- function(input, output, session) {
     
     # Update all widgets based on patients list
     update_patients_widgets(session, table)
-    
+
     return(table)
   })
   
   # Load sampling data and format #############################################
   samplings_table <- reactive({
+    
+    # Check if right file is loaded
+    req(input$Data_sampling)
+    if (is.null(check_samplings_table(input$Data_sampling))){
+      return(NULL)
+    }
     
     table <- format_samplings_table(input$Data_sampling$datapath)
 
@@ -273,6 +279,8 @@ server <- function(input, output, session) {
 
     # Load table depending if sampling data was given or not
     if (is.null(input$Data_sampling)){
+      data_table <- as.data.frame(moves_table())
+    } else if (is.null(samplings_table())) {
       data_table <- as.data.frame(moves_table())
     } else {
       data_table <- as.data.frame(genotype_filtered_table())
@@ -359,19 +367,21 @@ server <- function(input, output, session) {
     
     # Add sampling points if set
     if (!is.null(input$Data_sampling)){
-      # Import sampling data
-      sampling_data <- sampling_data_plot()
-      
-      # Add columns for shape and colors
-      plot <- plot + geom_point(data = sampling_data, 
-                                aes(x=DATE_PRELEVEMENT, y=IPP, 
-                                    shape=PRELEVEMENT, fill=PRELEVEMENT,
-                                    text = paste0("IPP: ",IPP,
-                                                  "\nDate de prélèvement: ",DATE_PRELEVEMENT,
-                                                  "\n", PRELEVEMENT)), 
-                                size=input$DotSize, inherit.aes = F) + 
-        scale_shape_manual(values=c(23, 21), breaks = c("Positif", "Négatif")) + 
-        scale_fill_manual(values=c("#d4171e", "#17d417"), breaks = c("Positif", "Négatif"))
+      if (!is.null(samplings_table())){
+        # Import sampling data
+        sampling_data <- sampling_data_plot()
+        
+        # Add columns for shape and colors
+        plot <- plot + geom_point(data = sampling_data, 
+                                  aes(x=DATE_PRELEVEMENT, y=IPP, 
+                                      shape=PRELEVEMENT, fill=PRELEVEMENT,
+                                      text = paste0("IPP: ",IPP,
+                                                    "\nDate de prélèvement: ",DATE_PRELEVEMENT,
+                                                    "\n", PRELEVEMENT)), 
+                                  size=input$DotSize, inherit.aes = F) + 
+          scale_shape_manual(values=c(23, 21), breaks = c("Positif", "Négatif")) + 
+          scale_fill_manual(values=c("#d4171e", "#17d417"), breaks = c("Positif", "Négatif"))
+      }
     }
     
     # Selection of the axis scale
@@ -431,7 +441,7 @@ server <- function(input, output, session) {
     # Import table
     table <- final_table()
     number_units <- length(levels(factor(table[,input$selectedUnit])))
-    
+
     # Define colors depending on the number of different units
     if (number_units <= 15){
       network_colors <- colors_vector

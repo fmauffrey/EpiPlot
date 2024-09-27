@@ -425,3 +425,38 @@ check_moves_table <- function(input_file){
   
   return("OK")
 }
+
+check_samplings_table <- function(input_file){
+  # Load and check the formatting of the samplings table
+  
+  # Check extension
+  ext <- tools::file_ext(input_file$name)
+  if (!ext %in% c("xlsx", "xls")) {
+    show_alert(title="Erreur de chargement",
+               type="error",
+               closeOnClickOutside = T,
+               text="Mauvaise extension")
+    return(NULL)
+  }
+
+  # Check data
+  samplings_table <- read_excel(input_file$datapath, skip = 1)
+
+  if (ncol(samplings_table) != 4){
+    show_alert(title="Erreur de chargement",
+               type="error",
+               closeOnClickOutside = T,
+               text=paste0("Fichier incorrect. Nombre de colonnes = ", ncol(samplings_table), " (Requis 4)"))
+    return(NULL)
+  }
+
+  if (nrow(samplings_table) == 0){
+    show_alert(title="Erreur de chargement",
+               type="error",
+               closeOnClickOutside = T,
+               text="Fichier incorrect. Aucune donnée.")
+    return(NULL)
+  }
+  
+  return("OK")
+}
