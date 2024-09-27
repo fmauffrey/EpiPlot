@@ -476,9 +476,14 @@ server <- function(input, output, session) {
   
   # Display moves plot
   output$timeline <- renderPlotly({
-    # If moves have been loaded, at least
+    
+    # If moves have been loaded, at least and is not null
     if (is.null(input$Data_mouvements))
       return(NULL)
+    
+    if (is.null(moves_table())){
+      return(NULL)
+    }
     
     moves_plot() %>%
       config(moves_plot(),
@@ -490,7 +495,11 @@ server <- function(input, output, session) {
   })
   
   # Display network
-  output$network <- renderVisNetwork({network_plot()})
+  output$network <- renderVisNetwork({
+    if (is.null(moves_table())){
+      return(NULL)
+    }
+    network_plot()})
   
   # Display moves table
   output$table <- renderUI({

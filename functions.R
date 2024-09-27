@@ -414,7 +414,7 @@ check_moves_table <- function(input_file){
                text=paste0("Fichier incorrect. Nombre de colonnes = ", ncol(moves_table), " (Requis 11)"))
     return(NULL)
   }
-  print(moves_table)
+
   if (nrow(moves_table) == 0){
     show_alert(title="Erreur de chargement",
                type="error",
