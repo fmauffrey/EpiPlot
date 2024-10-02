@@ -600,7 +600,7 @@ server <- function(input, output, session) {
   })
   
   # Button for generating report
-  output$report <- downloadHandler(
+  output$generate_report_button <- downloadHandler(
     filename <-  function(){
       if (input$report_type == "report_pdf.Rmd"){
         paste0("Rapport-",input$genotypePicker,"-",format(Sys.time(), "%y%m%d"), ".pdf")

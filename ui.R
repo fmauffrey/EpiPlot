@@ -91,7 +91,7 @@ secure_app(language = "fr",
                                                                   "report_word.Rmd"),
                                                justified = T,
                                                size="lg"),
-                             column(10,downloadBttn("report", label = "Générer", style = "material-flat",
+                             column(10,downloadBttn("generate_report_button", label = "Générer", style = "material-flat",
                                           ,size="sm", icon = icon("file-export"), block=T, color="default"))
                     ))),
               
