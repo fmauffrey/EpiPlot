@@ -1,0 +1,75 @@
+---
+output: "pdf_document"
+params:
+  set_title: NA
+  set_date: NA
+  set_author: NA
+  table: NA
+  move_plot: NA
+  network_plot: NA
+  epiplot_version: NA
+  comments: NA
+  date_min: NA
+  date_max: NA
+  genotype: NA
+  species: NA
+  image_path: "CHUV.png"
+title: "`r params$set_title`"
+date: "`r params$set_date`"
+author: "`r params$set_author`"
+header-includes:
+  - \usepackage{fancyhdr}
+  - \pagestyle{fancy}
+  - \fancyhf{}
+  - \fancyfoot[R]{Epiplot `r params$epiplot_version`}  # This adds your text to the right side of the header
+  - \renewcommand{\headrulewidth}{0pt}  # Optional: Remove header line
+
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+Ce rapport a été généré avec les données suivantes:  
+
+* Nombre de patients: `r nrow(params$table)`
+* Dates: `r params$date_min` et le `r params$date_max`
+* Organisme: `r params$species`
+* Génotype: `r params$genotype`
+
+# Commentaires
+`r params$comments`  
+
+# Données
+```{r echo=F}
+sum_table <- params$table
+colnames(sum_table) <- gsub("_", " ", colnames(sum_table))
+knitr::kable(sum_table, 
+             align = "c",
+             digits = 1,
+             caption = "Résumé des séjours de chaque patient à l'hôpital.")
+```
+
+```{r echo=F, out.width = "100%", fig.cap="Mouvements des patients à l'hôpital. Les mouvements sont représentés par des barres indiquant la durée de séjour de chaque patient dans une unité. Les différentes unités sont distinguées par un code couleur. Pour chaque patient, les prélèvements positifs et négatifs sont marqués respectivement par un losange rouge et un rond vert."}
+temp_file <- tempfile(fileext = ".pdf")
+
+# Save the plot as an image to the temporary file (necessary for writing on server)
+save_image(params$move_plot, temp_file,
+           width = "1024",
+           height = "512")
+
+# Copy the temporary file to the final destination
+knitr::include_graphics(temp_file)
+```
+
+```{r echo=F, out.width = "100%", fig.cap="Réseau montrant les liens épidémiologiques potentiels entre les patients. Chaque patient est représenté par un cercle, et les liens entre les cercles indiquent le nombre de jours passés par ces patients dans la même unité au même moment."}
+temp_file1 <- tempfile(fileext = ".html")
+temp_file2 <- tempfile(fileext = ".png")
+
+# Save the plot without printing it
+network_plot <- params$network_plot %>% 
+  visSave(temp_file1)
+
+# Conversion of html to image. Put in a variable to avoid printing
+webshot <- webshot(temp_file1, zoom = 1, file = temp_file2)
+
+knitr::include_graphics(temp_file2)
+```

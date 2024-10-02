@@ -474,8 +474,8 @@ server <- function(input, output, session) {
     
     # Set the number of column for the legend depending of the number of edges
     legend_data <- network_data[[3]]
-    legend_data$font.size <- rep(40,nrow(legend_data))
-    legend_data$width <- rep(30,nrow(legend_data))
+    legend_data$font.size <- rep(30,nrow(legend_data))
+    legend_data$width <- rep(20,nrow(legend_data))
     
     # Create network
     visNetwork(network_data[[1]], network_data[[2]]) %>%
@@ -579,7 +579,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # Saving buttons Gantt plot
+  # Saving buttons ############################################################
   # For filename, a function is needed to reevaluate the genotype selected each time the button is pressed
   output$ganttDl <- downloadHandler(filename = function(){
     if (input$genotypePicker=="") {
@@ -598,4 +598,36 @@ server <- function(input, output, session) {
     # Copy the temporary file to the final destination
     file.copy(temp_file, file)
   })
+  
+  # Button for generating report
+  output$report <- downloadHandler(
+    filename <-  function(){
+      if (input$report_type == "report_pdf.Rmd"){
+        paste0("Rapport-",input$genotypePicker,"-",format(Sys.time(), "%y%m%d"), ".pdf")
+      } else if (input$report_type == "report_html.Rmd"){
+        paste0("Rapport-",input$genotypePicker,"-",format(Sys.time(), "%y%m%d"), ".html")
+      } else if (input$report_type == "report_word.Rmd"){
+        paste0("Rapport-",input$genotypePicker,"-",format(Sys.time(), "%y%m%d"), ".docx")
+      }
+    },
+    content = function(file) {
+      tempReport <- file.path(tempdir(), input$report_type)
+      file.copy(input$report_type, tempReport, overwrite = TRUE)
+      rmarkdown::render(tempReport, output_file = file,
+                        params = list(set_title = input$report_title,
+                                      set_date = input$report_date,
+                                      set_author = input$report_author,
+                                      comments = input$report_comments,
+                                      table=get_summary_table(),
+                                      move_plot=moves_plot(),
+                                      network_plot=network_plot(),
+                                      epiplot_version=epiplot_version,
+                                      date_min=input$DateRange[1],
+                                      date_max=input$DateRange[2],
+                                      genotype=input$genotypePicker,
+                                      species=input$speciesPicker),
+                        envir = new.env(parent = globalenv())
+      )
+    }
+  )
 }

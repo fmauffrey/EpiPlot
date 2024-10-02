@@ -24,6 +24,9 @@ suppressPackageStartupMessages({
   library(IRanges)
   library(shinymanager)
   library(shinyjs)
+  library(rmarkdown)
+  library(webshot)
+  library(tidyr)
   source("functions.R")
 })
 
@@ -40,7 +43,7 @@ secure_app(language = "fr",
                                 dropdownMenu(type="notifications", 
                                              badgeStatus = NULL,
                                              icon = icon("info"),
-                                             headerText = "Epiplot version 0.9.6",
+                                             headerText = paste0("Epiplot version ", epiplot_version),
                                              notificationItem("florian.mauffrey@chuv.ch",
                                                               icon = icon("envelope"),
                                                               status = "info"))),
@@ -67,8 +70,30 @@ secure_app(language = "fr",
                                                                         "Unité fonctionelle" = "Unité_fonctionelle",
                                                                         "Service" = "Service",
                                                                         "Département" = "Département"))
-                             )
-                    )),
+                             ),
+                    menuItem("Rapport", icon=icon("file-arrow-down"),
+                             textInput("report_title", "Titre", value = "Mouvement des patients"),
+                             textInput("report_author", "Auteur(s)", value = "Unité Hygiène, Prévention et Contrôle de l'Infection (HPCi)"),
+                             textInput("report_date", "Date", value = format(Sys.time(), "%d %B %Y")),
+                             pickerInput("speciesPicker", "Organisme", choices=c("Enteroccocus faecium",
+                                                                                 "Pseudomonas aeruginosa",
+                                                                                 "Staphyloccocus aureus")),
+                             textAreaInput("report_comments", "Commentaires", 
+                                           width = "100%", 
+                                           height = "100%", 
+                                           resize = "vertical"),
+                             radioGroupButtons("report_type", "Format", 
+                                               choiceNames=list(icon("file-pdf"),
+                                                                icon("file-code"),
+                                                                icon("file-word")),
+                                               choiceValues= list("report_pdf.Rmd",
+                                                                  "report_html.Rmd",
+                                                                  "report_word.Rmd"),
+                                               justified = T,
+                                               size="lg"),
+                             column(10,downloadBttn("report", label = "Générer", style = "material-flat",
+                                          ,size="sm", icon = icon("file-export"), block=T, color="default"))
+                    ))),
               
                 # Body
                 dashboardBody(

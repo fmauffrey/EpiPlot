@@ -1,3 +1,6 @@
+# Version of the software
+epiplot_version <- "0.9.8"
+
 # Define colors when less than 15 units
 colors_vector <- c("#FF0000", "#0000FF", "#00FF00", "#FFFF00", "#FFA500", 
                    "#800080", "#FFC0CB", "#A52A2A", "#808080", "#40E0D0", 

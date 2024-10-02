@@ -498,7 +498,8 @@ summary_table <- function(moves_table, sampling_table){
 
     summary_table <- summary_table %>%
       dplyr::left_join(positive_samples, by="IPP") %>%
-      dplyr::left_join(negative_samples, by="IPP")
+      dplyr::left_join(negative_samples, by="IPP") %>%
+      dplyr::mutate(Echantillons_négatifs = replace_na(Echantillons_négatifs, 0))
   }
   return(summary_table)
 }
