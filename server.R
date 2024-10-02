@@ -12,8 +12,9 @@ server <- function(input, output, session) {
     reactiveValuesToList(res_auth)
   })
   
-  # Disable samplings table loading widget
+  # Disable samplings table loading widget and report generation button
   disable("Data_sampling")
+  disable("generate_report_button_bttn") # _bttn must be added for shinyWidget downloadBttn
   
   # Global variables and events ###############################################
   
@@ -194,8 +195,9 @@ server <- function(input, output, session) {
       return(NULL)
     }
     
-    # Enable samplings table loading
+    # Enable samplings table loading and report generation button
     enable("Data_sampling")
+    enable("generate_report_button_bttn")
 
     # Format moves table
     table <- format_moves_table(input$Data_mouvements$datapath) 
@@ -613,6 +615,7 @@ server <- function(input, output, session) {
     content = function(file) {
       tempReport <- file.path(tempdir(), input$report_type)
       file.copy(input$report_type, tempReport, overwrite = TRUE)
+      disable("generate_report_button_bttn")
       rmarkdown::render(tempReport, output_file = file,
                         params = list(set_title = input$report_title,
                                       set_date = input$report_date,
@@ -628,6 +631,7 @@ server <- function(input, output, session) {
                                       species=input$speciesPicker),
                         envir = new.env(parent = globalenv())
       )
+      enable("generate_report_button_bttn")
     }
   )
 }
