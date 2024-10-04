@@ -63,19 +63,18 @@ replace_no_end <- function(input_table){
   return(new_table)
 }
 
-update_patients_widgets <- function(session, input_table){
+update_patients_widgets <- function(session, IPP_list){
   # Update patient picker and selected patients widgets
   
-  patients_list <- levels(factor(input_table$IPP))
-  updatePickerInput(session, "patientPicker", choices = patients_list,
-                    selected = patients_list,
-                    choicesOpt = list(style = rep("color:black;", length(patients_list))))
-  updatePickerInput(session, "highlightPicker", choices = patients_list,
+  updatePickerInput(session, "patientPicker", choices = IPP_list,
+                    selected = IPP_list,
+                    choicesOpt = list(style = rep("color:black;", length(IPP_list))))
+  updatePickerInput(session, "highlightPicker", choices = IPP_list,
                     selected = NA,
-                    choicesOpt = list(style = rep("color:black;", length(patients_list))))
-  updatePickerInput(session, "findPatient_network", choices = patients_list,
+                    choicesOpt = list(style = rep("color:black;", length(IPP_list))))
+  updatePickerInput(session, "findPatient_network", choices = IPP_list,
                     selected = NA,
-                    choicesOpt = list(style = rep("color:black;", length(patients_list))))
+                    choicesOpt = list(style = rep("color:black;", length(IPP_list))))
 }
 
 format_samplings_table <- function(input_table_path){
@@ -282,17 +281,6 @@ filter_by_date <- function(table, start, end){
   }
 }
 
-genotype_count_table <- function(table){
-  # Return a table with the count of each DLST
-  
-  table <- dplyr::distinct(.data = table, IPP, .keep_all = T)
-  ST_count <- table(gsub(" ", "", unlist(strsplit(table$Génotype, ","))))
-  ST_count <- as.data.frame(ST_count)
-  colnames(ST_count) <- c("DLST", "Count")
-  
-  return(ST_count)
-}
-
 nested_list_to_df <- function(nested_list) {
   # Define a function to convert a nested list to a data frame
   
@@ -324,41 +312,7 @@ nested_list_to_df <- function(nested_list) {
   return(df)
 }
 
-add_missing_ipp <- function(moves_table, samplings_table){
-  # Add IPP with samplings but no move to the moves table
-  
-  # Get the unique IPPs from samplings_table that are not present in moves_table
-  missing_IPPs <- setdiff(unique(samplings_table$IPP), moves_table$IPP)
-  
-  # Subset the samplings_table for the missing IPPs
-  if (length(missing_IPPs) > 0) {
-    new_rows <- samplings_table[samplings_table$IPP %in% missing_IPPs, c("IPP", "DATE_PRELEVEMENT")]
-    
-    # Create a new data frame with the same columns as moves_table
-    new_rows <- data.frame(IPP = new_rows$IPP,
-                           Séjour = NA,
-                           Début_séjour = new_rows$DATE_PRELEVEMENT,
-                           Fin_séjour = new_rows$DATE_PRELEVEMENT,
-                           Début_mouvement = new_rows$DATE_PRELEVEMENT,
-                           fin_mouvement = new_rows$DATE_PRELEVEMENT,
-                           Département = NA,
-                           Service = NA,
-                           Unité_fonctionelle = NA,
-                           Unité_de_soins = NA,
-                           Durée_mouvement = 0,
-                           stringsAsFactors = FALSE)
-    
-    # Ensure the column names match those of moves_table
-    colnames(new_rows) <- colnames(moves_table)
-    
-    # Bind the new rows to the existing moves_table
-    moves_table <- rbind(moves_table, new_rows)
-  }
-  
-  return(moves_table)
-}
-
-add_genotype <- function(moves_table, samplings_table){
+add_genotype <- function(session, moves_table, samplings_table){
   # Add genotype to each IPP
   
   # Add genotype column and create the final table
@@ -375,23 +329,45 @@ add_genotype <- function(moves_table, samplings_table){
   complete_table <- complete_table %>%
     left_join(genotype_data, by = "IPP") %>%
     mutate(Génotype = coalesce(Génotype.y, Génotype.x)) %>%
-    select(-Génotype.x, -Génotype.y)
+    select(-Génotype.x, -Génotype.y) %>%
+    mutate(IPP = as.factor(IPP))
   
-  return(complete_table)
-}
-
-update_genotype_picker_with_count <- function(session, table){
+  # Add missing IPP as levels in the moves table
+  IPP_no_moves <- setdiff(unique(samplings_table$IPP), unique(moves_table$IPP))
+  new_levels <- c(levels(complete_table$IPP), IPP_no_moves)
+  complete_table$IPP <- factor(complete_table$IPP, levels=new_levels)
   
-  # Import genotype count table and create variables for the picker
-  genotype_count_table <- genotype_count_table(table)
-  genotype_id <- genotype_count_table$DLST
-  names(genotype_id) <- paste0(genotype_count_table$DLST, " (", genotype_count_table$Count ,")")
+  # Create dataframe with all IPP and genotype only
+  IPP_no_moves_uniques <- samplings_table %>%
+    rename(CLUSTER = "GENOTYPE") %>%
+    select(IPP, GENOTYPE) %>%
+    dplyr::distinct(IPP, .keep_all = T)
+  
+  IPP_with_moves_uniques <- complete_table %>%
+    rename(Génotype = "GENOTYPE") %>%
+    select(IPP, GENOTYPE) %>%
+    dplyr::distinct(IPP, .keep_all = T)
+  
+  all_IPP_and_genotpye <- rbind.data.frame(IPP_with_moves_uniques, IPP_no_moves_uniques) %>%
+    dplyr::distinct(IPP, .keep_all = T)
+  
+  # Return a table with the count of each DLST
+  GENOTYPE_count <- table(gsub(" ", "", unlist(strsplit(all_IPP_and_genotpye$GENOTYPE, ","))))
+  GENOTYPE_count <- as.data.frame(GENOTYPE_count)
+  colnames(GENOTYPE_count) <- c("GENOTYPE", "Count")
+  
+  # Create variables for the picker
+  genotype_id <- GENOTYPE_count$GENOTYPE
+  names(genotype_id) <- paste0(GENOTYPE_count$GENOTYPE, " (", GENOTYPE_count$Count ,")")
   
   # Update genotype picker widget
   updatePickerInput(session, "genotypePicker", 
                     choices = genotype_id,
                     selected = genotype_id[1],
                     choicesOpt = list(style = rep("color:black;", length(genotype_id))))
+  
+  # Return the complete table and table of all IPP and their genotype
+  return(list(complete_table,all_IPP_and_genotpye))
 }
 
 check_moves_table <- function(input_file){
@@ -481,18 +457,33 @@ summary_table <- function(moves_table, sampling_table){
   
   # Add genotype information if the table is present
   if (!is.null(sampling_table)){
+
+    # Add IPP with no moves if present
+    IPP_no_moves <- setdiff(unique(sampling_table$IPP), unique(moves_table$IPP))
+    if (length(IPP_no_moves) > 0){
+      IPP_no_moves_table <- cbind.data.frame(IPP = IPP_no_moves,
+                                             Nombre_de_séjours = rep(NA, length(IPP_no_moves)),
+                                             Départements_visités = rep(NA, length(IPP_no_moves)),
+                                             Services_visités = rep(NA, length(IPP_no_moves)),
+                                             Unités_fonctionelles_visités = rep(NA, length(IPP_no_moves)),
+                                             Unités_de_soins_visités = rep(NA, length(IPP_no_moves)),
+                                             Temps_total = rep(NA, length(IPP_no_moves)))
+
+      summary_table <- rbind.data.frame(summary_table, IPP_no_moves_table)
+    }
+
     # Count tables for positive and negative samples
     positive_samples <- sampling_table %>%
       dplyr::group_by(IPP, PRELEVEMENT) %>%
       dplyr::summarize(Freq=n()) %>%
-      dplyr::filter(PRELEVEMENT=="POSITIVE") %>%
+      dplyr::filter(PRELEVEMENT=="Positif") %>%
       dplyr::select(-PRELEVEMENT) %>%    
       dplyr::rename(Echantillons_positifs = Freq)
-   
+
     negative_samples <- sampling_table %>%
       dplyr::group_by(IPP, PRELEVEMENT) %>%
       dplyr::summarize(Freq=n()) %>%
-      dplyr::filter(PRELEVEMENT=="NEGATIVE") %>%
+      dplyr::filter(PRELEVEMENT=="Négatif") %>%
       dplyr::select(-PRELEVEMENT) %>%    
       dplyr::rename(Echantillons_négatifs = Freq)
 

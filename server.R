@@ -202,15 +202,6 @@ server <- function(input, output, session) {
   
     # Replace end date for stays without end date
     table <- replace_no_end(table)
-    
-    # Update date range widget
-    updateDateRangeInput(session, 
-                         "DateRange", 
-                         start=min(table$Début_mouvement)-150000, 
-                         end=max(table$Fin_mouvement)+150000)
-    
-    # Update all widgets based on patients list
-    update_patients_widgets(session, table)
 
     return(table)
   })
@@ -235,16 +226,11 @@ server <- function(input, output, session) {
     # Import moves and sampling tables
     moves_table <- moves_table()
     samplings_table <- samplings_table()
-    
-    # Add IPP with samplings but no moves
-    moves_table <- add_missing_ipp(moves_table, samplings_table)
 
-    # Add genotype column and create the final table
-    complete_table <-add_genotype(moves_table, samplings_table)
+    # Add genotype column and create the final table and update genotype picker
+    complete_table <-add_genotype(session, moves_table, samplings_table)[[1]]
+    all_IPP <-add_genotype(session, moves_table, samplings_table)[[2]]
 
-    # Count sample per genotype and update the picker widget
-    update_genotype_picker_with_count(session, complete_table)
-    
     # Add the sampling ordering choice in sorting widget
     updateSelectInput(session, "ganttOrder",
                       choices = list("Prélèvements" = "Prelevements",
@@ -252,39 +238,52 @@ server <- function(input, output, session) {
                                      "IPP" = "IPP"),
                       selected = "Prelevements")
 
-    return(complete_table)
+    return(list(complete_table, all_IPP))
   })
   
   # Generate the genotype filtered table ######################################
   genotype_filtered_table <- reactive({
     
     # Import the table with the genotype information added
-    table <- moves_table_with_samplings()
+    table <- moves_table_with_samplings()[[1]]
+    all_IPP <- moves_table_with_samplings()[[2]]
     
-    # Filter the table with the selected genotype
+    # Filter the tables with the selected genotype
     table <- table[grep(input$genotypePicker, table$Génotype),]
+    all_IPP <- all_IPP[grep(input$genotypePicker, all_IPP$GENOTYPE),]
+    
+    return(list(table, all_IPP))
+  })
 
+  # Update date and patients based on table and return final table ############
+  table_with_updates <- reactive({
+    
+    # Load table depending if sampling data was given or not
+    if (is.null(input$Data_sampling)){
+      table <- as.data.frame(moves_table())
+      IPP_list <- unique(table$IPP)
+    } else if (is.null(samplings_table())) {
+      table <- as.data.frame(moves_table())
+      IPP_list <- unique(table$IPP)
+    } else {
+      table <- as.data.frame(genotype_filtered_table()[[1]])
+      IPP_list <- unique(genotype_filtered_table()[[2]]$IPP)
+    }
+    
     # Update date range widget
     updateDateRangeInput(session, "DateRange", start=min(table$Début_mouvement)-150000, 
                          end=max(table$Fin_mouvement)+150000)
     
     # Update patient picker and highlighted patients widgets
-    update_patients_widgets(session, table)
+    update_patients_widgets(session, IPP_list)
     
     return(table)
   })
-  
+    
   # Generate final table (Date, patient, unit filter data) ####################
   final_table <- reactive({
 
-    # Load table depending if sampling data was given or not
-    if (is.null(input$Data_sampling)){
-      data_table <- as.data.frame(moves_table())
-    } else if (is.null(samplings_table())) {
-      data_table <- as.data.frame(moves_table())
-    } else {
-      data_table <- as.data.frame(genotype_filtered_table())
-    }
+    data_table <- table_with_updates()
 
     # Filter by date
     final_table <- filter_by_date(table = data_table,
@@ -302,7 +301,7 @@ server <- function(input, output, session) {
     
     # Load the table
     table_samp <- samplings_table()
-    
+
     # Change text for sampling
     table_samp[table_samp$PRELEVEMENT=="POSITIVE","PRELEVEMENT"] <- "Positif"
     table_samp[table_samp$PRELEVEMENT=="NEGATIVE","PRELEVEMENT"] <- "Négatif"
@@ -334,7 +333,7 @@ server <- function(input, output, session) {
     } else if (is.null(check_samplings_table(input$Data_sampling))) {
       summary_table <- summary_table(table, NULL)
     } else {
-      summary_table <- summary_table(table, samplings_table())
+      summary_table <- summary_table(table, sampling_data_plot())
     }
 
     return(summary_table)
