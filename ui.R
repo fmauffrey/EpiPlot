@@ -52,12 +52,16 @@ secure_app(language = "fr",
                 dashboardSidebar(
                   sidebarMenu(
                     id = "SideBar",
+                    
+                    # Files loading
                     menuItem("Fichiers", icon = icon("file"), startExpanded = TRUE,
                              fileInput("Data_mouvements", "Table des mouvements", accept=c(".xls", ".xlsx"),
                                        buttonLabel ="Parcourir...", placeholder = "Aucun fichier"),
                              fileInput("Data_sampling", "Table des prélèvements", accept=c(".xls", ".xlsx"),
                                        buttonLabel = "Parcourir...", placeholder = "Aucun fichier")
                              ),
+                    
+                    # Parameters settings
                     menuItem("Paramètres", icon = icon("gears"),
                              dateRangeInput("DateRange", "Dates", language = "fr-CH", weekstart = 1, separator = "à", format = "dd-mm-yyyy"),
                              fluidRow(column(6, actionBttn("bttnDateFilter365", "Dernière année", style = "simple", color = "success", size = "xs"),
@@ -69,8 +73,14 @@ secure_app(language = "fr",
                              selectInput("selectedUnit", "Niveau", list("Unité de soins" = "Unité_de_soins",
                                                                         "Unité fonctionelle" = "Unité_fonctionelle",
                                                                         "Service" = "Service",
-                                                                        "Département" = "Département"))
+                                                                        "Département" = "Département")),
+                             hr(),
+                             awesomeCheckbox("shortMovesCheckbox", "Filtrer mouvements courts", value = F),
+                             numericInput("shortMovesThreshold", label = "Jours", value = 0.5, 
+                                          min = 0, max = 10, step=0.1)
                              ),
+                    
+                    # Report generation
                     menuItem("Rapport", icon=icon("file-arrow-down"),
                              textInput("report_title", "Titre", value = "Mouvement des patients"),
                              textInput("report_author", "Auteur(s)", value = "Unité Hygiène, Prévention et Contrôle de l'Infection (HPCi)"),

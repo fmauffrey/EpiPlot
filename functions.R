@@ -494,3 +494,38 @@ summary_table <- function(moves_table, sampling_table){
   }
   return(summary_table)
 }
+
+replace_short_moves <- function(table, threshold){
+  # Replace moves shorter than the threshold by extending the previous or next move
+  new_table <- table %>%
+    group_by(IPP, Séjour) %>%  # Group by IPP and Séjour
+    mutate(
+      # Convert columns to character (necessary for next operations)
+      Département = as.character(Département),
+      Service = as.character(Service),
+      Unité_fonctionelle = as.character(Unité_fonctionelle),
+      Unité_de_soins = as.character(Unité_de_soins),
+      
+      # Set Département, Service, Unité_fonctionelle, Unité_de_soins to NA if Durée_mouvement is below threshold
+      Département = ifelse(Durée_mouvement < threshold, NA, Département),
+      Service = ifelse(Durée_mouvement < threshold, NA, Service),
+      Unité_fonctionelle = ifelse(Durée_mouvement < threshold, NA, Unité_fonctionelle),
+      Unité_de_soins = ifelse(Durée_mouvement < threshold, NA, Unité_de_soins),
+      
+      # Convert columns to factor
+      Département = as.factor(Département),
+      Service = as.factor(Service),
+      Unité_fonctionelle = as.factor(Unité_fonctionelle),
+      Unité_de_soins = as.factor(Unité_de_soins)
+    ) %>%
+    
+    # Use fill() to propagate the next available non-NA value downward
+    fill(Département, Service, Unité_fonctionelle, Unité_de_soins, .direction = "downup") %>%
+    
+    # Remove rows with any NA values in the relevant columns
+    drop_na(Département, Service, Unité_fonctionelle, Unité_de_soins) %>%
+    
+    ungroup()  # Ungroup after operations
+  
+  return(as.data.frame(new_table))
+}

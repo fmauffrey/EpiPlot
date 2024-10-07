@@ -282,20 +282,33 @@ server <- function(input, output, session) {
     return(table)
   })
     
-  # Generate final table (Date, patient, unit filter data) ####################
-  final_table <- reactive({
-
+  # Filter table (Date, patient, unit filter data) ############################
+  data_filtered_table <- reactive({
+    
     data_table <- table_with_updates()
-
+    
     # Filter by date
-    final_table <- filter_by_date(table = data_table,
-                                start = as.POSIXct(input$DateRange[1]), 
-                                end = as.POSIXct(input$DateRange[2]))
+    data_table <- filter_by_date(table = data_table,
+                                 start = as.POSIXct(input$DateRange[1]), 
+                                 end = as.POSIXct(input$DateRange[2]))
     
     # Filter by patient 
-    final_table <- final_table[which(final_table$IPP %in% input$patientPicker),]
-
-    return(final_table)
+    data_table <- data_table[which(data_table$IPP %in% input$patientPicker),]
+    
+    return(data_table)
+  })
+  
+  # Generate final table and remove short moves if requested ##################
+  final_table <- reactive({
+    
+    table <- data_filtered_table()
+    
+    # Replace short moves if requested
+    if (input$shortMovesCheckbox){
+      table <- replace_short_moves(table, input$shortMovesThreshold)
+    }
+    
+    return(table)
   })
   
   # Return the filtered sampling data for Gantt plot ##########################
@@ -538,11 +551,12 @@ server <- function(input, output, session) {
     table <- final_table()
     
     # Remove useless columns
-    table <- subset(table, select = -c(Séjour, Début_séjour, Fin_séjour, Durée_mouvement))
+    table <- subset(table, select = -c(Séjour, Début_séjour, Fin_séjour))
 
     # Formatting table before displaying
     table <- table %>% mutate(Début_mouvement = format(Début_mouvement, "%Y-%m-%d %H:%M:%S"),
-                              Fin_mouvement = format(Fin_mouvement, "%Y-%m-%d %H:%M:%S"))
+                              Fin_mouvement = format(Fin_mouvement, "%Y-%m-%d %H:%M:%S"),
+                              Durée_mouvement = round(Durée_mouvement, 2))
     colnames(table) <- gsub("_", " ", colnames(table))
 
     box(width = NULL,
