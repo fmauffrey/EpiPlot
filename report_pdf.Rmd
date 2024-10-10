@@ -13,7 +13,7 @@ params:
   date_max: NA
   genotype: NA
   species: NA
-  image_path: "CHUV.png"
+  workdir: NA
 title: "`r params$set_title`"
 date: "`r params$set_date`"
 author: "`r params$set_author`"
@@ -21,24 +21,28 @@ header-includes:
   - \usepackage{fancyhdr}
   - \pagestyle{fancy}
   - \fancyhf{}
-  - \fancyfoot[R]{Epiplot `r params$epiplot_version`}  # This adds your text to the right side of the header
+  - \fancyfoot[R]{}  # This adds your text to the right side of the header
   - \renewcommand{\headrulewidth}{0pt}  # Optional: Remove header line
-
 ---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
-Ce rapport a été généré avec les données suivantes:  
+Ce rapport a été généré avec les données suivantes:
 
 * Nombre de patients: `r nrow(params$table)`
 * Dates: `r params$date_min` et le `r params$date_max`
 * Organisme: `r params$species`
 * Génotype: `r params$genotype`
+  
+EpiPlot `r params$epiplot_version`
 
 # Commentaires
-`r params$comments`  
+
+`r params$comments`
 
 # Données
+
 ```{r echo=F}
 sum_table <- params$table
 colnames(sum_table) <- gsub("_", " ", colnames(sum_table))

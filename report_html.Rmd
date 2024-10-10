@@ -27,6 +27,8 @@ Ce rapport a été généré avec les données suivantes:
 * Dates: `r params$date_min` et le `r params$date_max`
 * Organisme: `r params$species`
 * Génotype: `r params$genotype`
+  
+EpiPlot `r params$epiplot_version`
 
 # Commentaires
 `r params$comments`  
