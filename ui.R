@@ -27,6 +27,7 @@ suppressPackageStartupMessages({
   library(rmarkdown)
   library(webshot)
   library(tidyr)
+  library(here)
   source("functions.R")
 })
 
