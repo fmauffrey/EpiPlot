@@ -119,17 +119,17 @@ secure_app(language = "fr",
                               selected = "Table",
                               
                               ########## Table tab
-                              tabPanel("Table mouvements", icon = icon("table"),
+                              tabPanel("Table", icon = icon("table"),
                                        uiOutput("table")
                               ),
                               
                               ########## Summary tab
-                              tabPanel("Table résumé", icon = icon("table-list"),
+                              tabPanel("Résumé", icon = icon("table-list"),
                                        uiOutput("summary_table"),
                               ),
                               
                               ############# Gantt tab
-                              tabPanel("Graphe mouvements", icon = icon("chart-gantt"),
+                              tabPanel("Mouvements", icon = icon("chart-gantt"),
                                        fluidRow(
                                          # Box with plot
                                          box(width = 12, height = "60vh",
@@ -157,7 +157,7 @@ secure_app(language = "fr",
                                        )),
                               
                               ########### Network tab
-                              tabPanel("Graphe réseau", icon = icon("circle-nodes"),
+                              tabPanel("Réseau", icon = icon("circle-nodes"),
                                        fluidRow(
                                          # Activate shinyjs for disabling button
                                          useShinyjs(),
