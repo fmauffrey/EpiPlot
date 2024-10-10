@@ -35,11 +35,11 @@ suppressPackageStartupMessages({
 options(spinner.type = 6)
 
 secure_app(language = "fr",
-  dashboardPage(skin = "green",
+  dashboardPage(skin = "blue",
                 title = "Epiplot",
                 
                 # Header
-                dashboardHeader(title = span(img(src = "CHUV.png", height = 40), "Epiplot"),
+                dashboardHeader(title = img(src = "Epiplot_logo.png", height = 50),
                                 dropdownMenu(type="notifications", 
                                              badgeStatus = NULL,
                                              icon = icon("info"),
@@ -109,7 +109,7 @@ secure_app(language = "fr",
                 dashboardBody(
                   
                   ########## Logo for the browser tab
-                  tags$head(tags$link(rel = "shortcut icon", href = "logo.png")),
+                  tags$head(tags$link(rel = "shortcut icon", href = "Epiplot_logo_mini.png")),
                   
                   tabsetPanel(type = "tabs",
                               selected = "Table",
