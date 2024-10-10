@@ -35,7 +35,9 @@ suppressPackageStartupMessages({
 options(spinner.type = 6)
 
 secure_app(language = "fr",
-  dashboardPage(skin = "blue",
+           theme = shinytheme("cerulean"),
+           tags_top = tags$div(tags$img(src = "Epiplot_logo.png", width = 400)),
+           dashboardPage(skin = "blue",
                 title = "Epiplot",
                 
                 # Header
