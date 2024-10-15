@@ -86,9 +86,11 @@ secure_app(language = "fr",
                     
                     # Report generation
                     menuItem("Rapport", icon=icon("file-arrow-down"),
-                             pickerInput("speciesPicker", "Organisme", choices=c("Enteroccocus faecium",
+                             pickerInput("speciesPicker", "Organisme", choices=c(HTML("<i>Staphyloccocus aureus</i> résistant à la méticiline"),
+                                                                                 "Enteroccocus faecium à la vancomycine",
                                                                                  "Pseudomonas aeruginosa",
-                                                                                 "Staphyloccocus aureus")),
+                                                                                 "Clostridium difficile"),
+                                         choicesOpt = list()),
                              textAreaInput("report_comments", "Commentaires", 
                                            width = "100%", 
                                            height = "100%", 
@@ -103,8 +105,8 @@ secure_app(language = "fr",
                                                                   "report_word.Rmd"),
                                                justified = T,
                                                size="lg"),
-                             column(10,downloadBttn("generate_report_button", label = "Générer", style = "material-flat",
-                                          ,size="sm", icon = icon("file-export"), block=T, color="default"))
+                             column(10, downloadBttn("generate_report_button", label = "Générer", style = "material-flat",
+                                                     size="sm", icon = icon("file-export"), block=T, color="default"))
                     ))),
               
                 # Body
