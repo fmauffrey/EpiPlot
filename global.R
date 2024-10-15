@@ -8,8 +8,8 @@ colors_vector <- c("#FF0000", "#0000FF", "#00FF00", "#FFFF00", "#FFA500",
 
 # define some basic credentials (on data.frame) for login
 credentials <- data.frame(
-  user = c("HPCI"), # mandatory
-  password = c("HPCI"), # mandatory
+  user = c("hpci"), # mandatory
+  password = c("hpci"), # mandatory
   admin = c(FALSE),
   stringsAsFactors = FALSE
 )
