@@ -13,3 +13,8 @@ credentials <- data.frame(
   admin = c(FALSE),
   stringsAsFactors = FALSE
 )
+
+# Define some variable for reports generation
+report_title = "Analyse des mouvements des patients"
+report_author = "Laboratoire d'épidémiologie - Institut de microbiologie"
+report_date = format(Sys.time(), "%d %B %Y")

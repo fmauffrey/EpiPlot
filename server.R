@@ -637,9 +637,9 @@ server <- function(input, output, session) {
       file.copy(input$report_type, tempReport, overwrite = TRUE)
       disable("generate_report_button_bttn")
       rmarkdown::render(tempReport, output_file = file,
-                        params = list(set_title = input$report_title,
-                                      set_date = input$report_date,
-                                      set_author = input$report_author,
+                        params = list(set_title = report_title,
+                                      set_date = report_date,
+                                      set_author = report_author,
                                       comments = input$report_comments,
                                       table=get_summary_table(),
                                       move_plot=moves_plot(),

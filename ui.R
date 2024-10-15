@@ -86,9 +86,6 @@ secure_app(language = "fr",
                     
                     # Report generation
                     menuItem("Rapport", icon=icon("file-arrow-down"),
-                             textInput("report_title", "Titre", value = "Mouvement des patients"),
-                             textInput("report_author", "Auteur(s)", value = "Unité Hygiène, Prévention et Contrôle de l'Infection (HPCi)"),
-                             textInput("report_date", "Date", value = format(Sys.time(), "%d %B %Y")),
                              pickerInput("speciesPicker", "Organisme", choices=c("Enteroccocus faecium",
                                                                                  "Pseudomonas aeruginosa",
                                                                                  "Staphyloccocus aureus")),
