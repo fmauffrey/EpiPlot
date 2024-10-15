@@ -3,7 +3,9 @@ output: "pdf_document"
 params:
   set_title: NA
   set_date: NA
-  set_author: NA
+  set_author1: NA
+  set_author2: NA
+  typing_method: NA
   table: NA
   move_plot: NA
   network_plot: NA
@@ -16,33 +18,37 @@ params:
   workdir: NA
 title: "`r params$set_title`"
 date: "`r params$set_date`"
-author: "`r params$set_author`"
+author: "`r params$set_author1` - `r params$set_author2`"
 header-includes:
   - \usepackage{fancyhdr}
   - \pagestyle{fancy}
-  - \fancyhf{}
-  - \fancyfoot[R]{}  # This adds your text to the right side of the header
-  - \renewcommand{\headrulewidth}{0pt}  # Optional: Remove header line
+  - \fancyhead[R]{EpiPlot `r params$epiplot_version`}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+options(knitr.kable.NA = '')
 ```
+
+```{r echo=F, out.width="200px", fig.align="center"}
+knitr::include_graphics(paste0(params$workdir, "/www/Epiplot_logo.png"))
+```
+
 Ce rapport a été généré avec les données suivantes:
 
-* Nombre de patients: `r nrow(params$table)`
-* Dates: `r params$date_min` et le `r params$date_max`
-* Organisme: `r params$species`
-* Génotype: `r params$genotype`
-  
-EpiPlot `r params$epiplot_version`
+-   Nombre de patients: `r nrow(params$table)`
+-   Période: `r params$date_min` au `r params$date_max`
+-   Organisme: `r params$species`
+-   Méthode de typage: `r params$typing_method`
+-   Génotype: `r params$genotype`
 
 # Commentaires
 
 `r params$comments`
 
-# Données
+\newpage
 
+# Table des données
 ```{r echo=F}
 sum_table <- params$table
 colnames(sum_table) <- gsub("_", " ", colnames(sum_table))
@@ -52,6 +58,9 @@ knitr::kable(sum_table,
              caption = "Résumé des séjours de chaque patient à l'hôpital.")
 ```
 
+\newpage
+
+# Mouvements des patients à l'hôpital
 ```{r echo=F, out.width = "100%", fig.cap="Mouvements des patients à l'hôpital. Les mouvements sont représentés par des barres indiquant la durée de séjour de chaque patient dans une unité. Les différentes unités sont distinguées par un code couleur. Pour chaque patient, les prélèvements positifs et négatifs sont marqués respectivement par un losange rouge et un rond vert."}
 temp_file <- tempfile(fileext = ".pdf")
 
@@ -64,7 +73,10 @@ save_image(params$move_plot, temp_file,
 knitr::include_graphics(temp_file)
 ```
 
-```{r echo=F, out.width = "100%", fig.cap="Réseau montrant les liens épidémiologiques potentiels entre les patients. Chaque patient est représenté par un cercle, et les liens entre les cercles indiquent le nombre de jours passés par ces patients dans la même unité au même moment."}
+\newpage
+
+# Analyse en réseau des mouvements
+```{r echo=F, out.width = "100%", fig.cap="Réseau montrant les périodes communes d'hospitalisation dans les mêmes unités de soins. Chaque patient est représenté par un cercle, et les liens entre les cercles indiquent le nombre de jours passés par ces patients dans la même unité au même moment."}
 temp_file1 <- tempfile(fileext = ".html")
 temp_file2 <- tempfile(fileext = ".png")
 

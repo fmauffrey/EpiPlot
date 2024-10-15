@@ -639,7 +639,9 @@ server <- function(input, output, session) {
       rmarkdown::render(tempReport, output_file = file,
                         params = list(set_title = report_title,
                                       set_date = report_date,
-                                      set_author = report_author,
+                                      set_author1 = report_author1,
+                                      set_author2 = report_author2,
+                                      typing_method = input$typing_method,
                                       comments = input$report_comments,
                                       table=get_summary_table(),
                                       move_plot=moves_plot(),
@@ -648,7 +650,8 @@ server <- function(input, output, session) {
                                       date_min=input$DateRange[1],
                                       date_max=input$DateRange[2],
                                       genotype=input$genotypePicker,
-                                      species=input$speciesPicker),
+                                      species=input$speciesPicker,
+                                      workdir=here()),
                         envir = new.env(parent = globalenv())
       )
       enable("generate_report_button_bttn")
