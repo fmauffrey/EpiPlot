@@ -27,16 +27,20 @@ server <- function(input, output, session) {
   
   # Manual date range update buttons - Reset
   observeEvent(input$bttnDateFilterReset, {
-    if (!is.null(input$Data_mouvements)){
-      min_date <- min(moves_table()$Début_mouvement)
-      max_date <- max(moves_table()$Fin_mouvement)
-      # The table loaded changes if sampling data loaded or not
-      if (is.null(input$Data_sampling)){
-        updateDateRangeInput(session, "DateRange", start=min_date-150000, end=max_date+150000)
-      } else {
-        updateDateRangeInput(session, "DateRange", start=min_date, end=max_date+150000)
-      }
+    samplings <- NULL
+    
+    # Load table depending if sampling data was given or not
+    if (is.null(input$Data_sampling)){
+      table <- as.data.frame(moves_table())
+    } else if (is.null(samplings_table())) {
+      table <- as.data.frame(moves_table())
+    } else {
+      table <- as.data.frame(genotype_filtered_table()[[1]])
+      samplings <- samplings_table()
     }
+    
+    # Update date range widget
+    update_date(session, table, samplings)
   })
   
   # Observe events for getting nodes selected on network and display them
@@ -260,6 +264,9 @@ server <- function(input, output, session) {
   # Update date and patients based on table and return final table ############
   table_with_updates <- reactive({
     
+    # Define samplings variable to store samplings table if possible
+    samplings <- NULL
+    
     # Load table depending if sampling data was given or not
     if (is.null(input$Data_sampling)){
       table <- as.data.frame(moves_table())
@@ -270,11 +277,11 @@ server <- function(input, output, session) {
     } else {
       table <- as.data.frame(genotype_filtered_table()[[1]])
       IPP_list <- unique(genotype_filtered_table()[[2]]$IPP)
+      samplings <- samplings_table()
     }
     
     # Update date range widget
-    updateDateRangeInput(session, "DateRange", start=min(table$Début_mouvement)-150000, 
-                         end=max(table$Fin_mouvement)+150000)
+    update_date(session, table, samplings)
     
     # Update patient picker and highlighted patients widgets
     update_patients_widgets(session, IPP_list)

@@ -529,3 +529,14 @@ replace_short_moves <- function(table, threshold){
   
   return(as.data.frame(new_table))
 }
+
+update_date <- function(session, table, samplings){
+  # Update the date range widget considering both moves and samplings dates
+  
+  # Gather all dates
+  all_dates <- c(table$Début_mouvement, table$Fin_mouvement, samplings$DATE_PRELEVEMENT)
+  
+  # Update the widget
+  updateDateRangeInput(session, "DateRange", start=min(all_dates)-150000, 
+                       end=max(all_dates)+150000)
+}
