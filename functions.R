@@ -449,9 +449,7 @@ summary_table <- function(moves_table, sampling_table){
   summary_table <- moves_table %>%
     dplyr::group_by(IPP) %>%
     dplyr::summarize(Nombre_de_séjours = n_distinct(Séjour),
-                     Départements_visités = n_distinct(Département),
                      Services_visités = n_distinct(Service),
-                     Unités_fonctionelles_visités = n_distinct(Unité_fonctionelle),
                      Unités_de_soins_visités = n_distinct(Unité_de_soins),
                      Temps_total = round(sum(Durée_mouvement, na.rm = T),1))
   
@@ -463,9 +461,7 @@ summary_table <- function(moves_table, sampling_table){
     if (length(IPP_no_moves) > 0){
       IPP_no_moves_table <- cbind.data.frame(IPP = IPP_no_moves,
                                              Nombre_de_séjours = rep(NA, length(IPP_no_moves)),
-                                             Départements_visités = rep(NA, length(IPP_no_moves)),
                                              Services_visités = rep(NA, length(IPP_no_moves)),
-                                             Unités_fonctionelles_visités = rep(NA, length(IPP_no_moves)),
                                              Unités_de_soins_visités = rep(NA, length(IPP_no_moves)),
                                              Temps_total = rep(NA, length(IPP_no_moves)))
 
@@ -492,6 +488,10 @@ summary_table <- function(moves_table, sampling_table){
       dplyr::left_join(negative_samples, by="IPP") %>%
       dplyr::mutate(Echantillons_négatifs = replace_na(Echantillons_négatifs, 0))
   }
+  
+  # Rename column with unit
+  colnames(summary_table) <- gsub("Temps_total", "Temps_total_(jours)", colnames(summary_table))
+  
   return(summary_table)
 }
 
