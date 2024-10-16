@@ -29,7 +29,6 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(here)
   library(shinythemes)
-  library(shinyFiles)
   source("functions.R")
 })
 
