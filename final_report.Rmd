@@ -5,6 +5,7 @@ params:
   files_list: NA
   set_title: NA
   set_date: NA
+  reports: NA
 title: "`r params$set_title`"
 urlcolor: blue
 header-includes:
@@ -38,7 +39,7 @@ Protocole :\
 Analyse des clusters :
 ```{r , echo=FALSE, results="asis"}
 links <- c()
-for (i in params$files_list){
+for (i in params$reports$name){
   links <- c(links, paste0("[", gsub(".html","",i), "](", i, ")", "\n\n"))
 }
 df <- data.frame(links)

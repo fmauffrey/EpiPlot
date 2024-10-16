@@ -1,26 +1,6 @@
 # Server ######################################################################
 server <- function(input, output, session) {
 
-  # Code chunks for scanning directory for final report ######################
-  # Set up the directory input dialog (for scanning repo for final report)
-  volumes <- c(Home = fs::path_home(), "Root" = "/")
-  shinyDirChoose(input, "directory", roots = volumes, session = session)
-  
-  # Reactive to store the selected directory path
-  dir_path <- reactive({
-    parseDirPath(volumes, input$directory)
-  })
-  
-  # Get files list
-  files_list <- reactive({
-    list.files(dir_path(), pattern = ".*.html$")
-  })
-  
-  # Output the selected directory path
-  output$selected_dir <- renderPrint({
-    dir_path()
-  })
-  
   # Authentication part ###################################################
   # call the server part
   # check_credentials returns a function to authenticate users
@@ -688,7 +668,8 @@ server <- function(input, output, session) {
                         params = list(set_title = final_report_title,
                                       set_date = report_date,
                                       reports_path = dir_path(),
-                                      files_list = files_list()),
+                                      files_list = files_list(),
+                                      reports = input$Data_reports),
                         envir = new.env(parent = globalenv())
       )
     }

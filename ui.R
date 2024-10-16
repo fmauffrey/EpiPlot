@@ -113,9 +113,8 @@ secure_app(language = "fr",
                     ),
                     menuItem("Rapport final", icon=icon("file-signature"),
                              fluidPage(
-                               fluidRow(
-                                 column(12, shinyDirButton("directory", "Choisir un dossier", "Choisir un dossier", style="width:80%;")),
-                                 column(12, verbatimTextOutput("selected_dir"))),
+                               fluidRow(fileInput("Data_reports", "Résultats à inclure", accept=c(".pdf", ".html"),
+                                                  buttonLabel ="Parcourir...", placeholder = "Aucun fichier", multiple = T)),
                                fluidRow(column(10, downloadBttn("generate_final_report_button", label = "Générer", style = "material-flat",
                                                                 size="sm", icon = icon("file-export"), block=T, color="default"))))
                     )
