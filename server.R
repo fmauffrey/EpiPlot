@@ -1,6 +1,27 @@
 # Server ######################################################################
 server <- function(input, output, session) {
 
+  # Code chunks for scanning directory for final report ######################
+  # Set up the directory input dialog (for scanning repo for final report)
+  volumes <- c(Home = fs::path_home(), "Root" = "/")
+  shinyDirChoose(input, "directory", roots = volumes, session = session)
+  
+  # Reactive to store the selected directory path
+  dir_path <- reactive({
+    parseDirPath(volumes, input$directory)
+  })
+  
+  # Get files list
+  files_list <- reactive({
+    list.files(dir_path(), pattern = ".*.html$")
+  })
+  
+  # Output the selected directory path
+  output$selected_dir <- renderPrint({
+    dir_path()
+  })
+  
+  # Authentication part ###################################################
   # call the server part
   # check_credentials returns a function to authenticate users
   res_auth <- secure_server(
@@ -12,12 +33,11 @@ server <- function(input, output, session) {
     reactiveValuesToList(res_auth)
   })
   
+  # Initial variables and events ##############################################
+  
   # Disable samplings table loading widget and report generation button
   disable("Data_sampling")
   disable("generate_report_button_bttn") # _bttn must be added for shinyWidget downloadBttn
-  
-  # Global variables and events ###############################################
-  
   # Manual date range update buttons - Minus 365 days
   observeEvent(input$bttnDateFilter365, {
     if (!is.null(input$Data_mouvements)){
@@ -655,6 +675,22 @@ server <- function(input, output, session) {
                         envir = new.env(parent = globalenv())
       )
       enable("generate_report_button_bttn")
+    }
+  )
+  
+  # Button for generating the final report
+  output$generate_final_report_button <- downloadHandler(
+    filename = "Rapport de surveillance moléculaire.docx",
+    content = function(file) {
+      tempReport <- file.path(tempdir(), "final_report.Rmd")
+      file.copy("final_report.Rmd", tempReport, overwrite = TRUE)
+      rmarkdown::render(tempReport, output_file = file,
+                        params = list(set_title = final_report_title,
+                                      set_date = report_date,
+                                      reports_path = dir_path(),
+                                      files_list = files_list()),
+                        envir = new.env(parent = globalenv())
+      )
     }
   )
 }

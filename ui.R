@@ -29,6 +29,7 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(here)
   library(shinythemes)
+  library(shinyFiles)
   source("functions.R")
 })
 
@@ -107,9 +108,19 @@ secure_app(language = "fr",
                                                                   "report_word.Rmd"),
                                                justified = T,
                                                size="lg"),
-                             column(10, downloadBttn("generate_report_button", label = "Générer", style = "material-flat",
-                                                     size="sm", icon = icon("file-export"), block=T, color="default"))
-                    ))),
+                             fluidPage(column(10,downloadBttn("generate_report_button", label = "Générer", style = "material-flat",
+                                          size="sm", icon = icon("file-export"), block=T, color="default")))
+                    ),
+                    menuItem("Rapport final", icon=icon("file-signature"),
+                             fluidPage(
+                               fluidRow(
+                                 column(12, shinyDirButton("directory", "Choisir un dossier", "Choisir un dossier", style="width:80%;")),
+                                 column(12, verbatimTextOutput("selected_dir"))),
+                               fluidRow(column(10, downloadBttn("generate_final_report_button", label = "Générer", style = "material-flat",
+                                                                size="sm", icon = icon("file-export"), block=T, color="default"))))
+                    )
+                  )
+                ),
               
                 # Body
                 dashboardBody(

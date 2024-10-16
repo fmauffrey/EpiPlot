@@ -1,0 +1,55 @@
+---
+output: "word_document"
+params:
+  reports_path: NA
+  files_list: NA
+  set_title: NA
+  set_date: NA
+title: "`r params$set_title`"
+urlcolor: blue
+header-includes:
+  \usepackage{fancyhdr}
+  \pagestyle{fancy}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+\
+\
+`r params$set_date`\
+\
+Fait par :\
+\
+Période :\
+\
+Nombre de cas :\
+\
+Nombre de génotype DLST :\
+\
+Nombre de clusters >1 cas :\
+\
+Base :\
+\
+Protocole :\
+\
+\
+\
+Analyse des clusters :
+```{r , echo=FALSE, results="asis"}
+links <- c()
+for (i in params$files_list){
+  links <- c(links, paste0("[", gsub(".html","",i), "](", i, ")", "\n\n"))
+}
+df <- data.frame(links)
+df$Numbers <- rep("", nrow(df))
+df$Comments <- rep("", nrow(df))
+knitr::kable(df,
+             col.names = c("Cluster", "Nb de cas", "Liens épidémiologiques"),
+             align = c("l", "c", "l"))
+```
+\
+\
+Remarque :  
+
+

@@ -16,6 +16,7 @@ credentials <- data.frame(
 
 # Define some variable for reports generation
 report_title = "Analyse des mouvements des patients"
+final_report_title = "Rapport de surveillance moléculaire"
 report_author1 = "Laboratoire d'épidémiologie"
 report_author2 = "Institut de microbiologie - CHUV"
-report_date = paste0("Date du rapport : ", format(Sys.time(), "%d %B %Y"))
+report_date = paste0("Date du rapport : ", format(Sys.time(), "%d.%m.%Y"))
