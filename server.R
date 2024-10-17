@@ -671,8 +671,6 @@ server <- function(input, output, session) {
       rmarkdown::render(tempReport, output_file = file,
                         params = list(set_title = final_report_title,
                                       set_date = report_date,
-                                      reports_path = dir_path(),
-                                      files_list = files_list(),
                                       reports = input$Data_reports),
                         envir = new.env(parent = globalenv())
       )
