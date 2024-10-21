@@ -85,10 +85,12 @@ format_samplings_table <- function(input_table_path){
                                     "DATE_PRELEVEMENT", "CLUSTER"))
   
   # Convert into appropriate type
-  table <- as.data.frame(table %>% mutate(IPP = as.character(IPP),
+  table <- as.data.frame(table %>% 
+                           mutate(IPP = as.character(IPP),
                                           PRELEVEMENT = as.character(PRELEVEMENT),
                                           DATE_PRELEVEMENT = as.POSIXct(DATE_PRELEVEMENT),
-                                          CLUSTER = as.character(CLUSTER)))
+                                          CLUSTER = as.character(CLUSTER)) %>%
+                           filter(!is.na(DATE_PRELEVEMENT)))
   
   return(table)
 }
