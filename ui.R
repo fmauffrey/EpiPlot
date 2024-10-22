@@ -68,7 +68,7 @@ secure_app(language = "fr",
                     # Parameters settings
                     menuItem("Paramètres", icon = icon("gears"),
                              dateRangeInput("DateRange", "Dates", language = "fr-CH", weekstart = 1, separator = "à", format = "dd-mm-yyyy"),
-                             fluidRow(column(6, actionBttn("bttnDateFilter365", "Dernière année", style = "simple", color = "default", size = "xs"),
+                             fluidRow(column(6, actionBttn("bttnDateFilter365", "Dernière année", style = "simple", color = "primary", size = "xs"),
                                              actionBttn("bttnDateFilterReset", "Reset", style = "simple", color = "primary", size = "xs"))),
                              pickerInput("genotypePicker", "Génotype", choices = "",
                                          options = pickerOptions(title = "Aucune sélection", size = 10, liveSearch = T)),
