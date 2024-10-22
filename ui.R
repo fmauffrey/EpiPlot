@@ -87,7 +87,7 @@ secure_app(language = "fr",
                     # Report generation
                     menuItem("Rapport", icon=icon("file-arrow-down"),
                              pickerInput("speciesPicker", "Organisme", choices=c("Staphyloccocus aureus résistant à la méticiline",
-                                                                                 "Enteroccocus faecium à la vancomycine",
+                                                                                 "Enteroccocus faecium résistant à la vancomycine",
                                                                                  "Pseudomonas aeruginosa",
                                                                                  "Clostridium difficile")),
                              pickerInput("typing_method", "Méthode", choices = c("DLST",
