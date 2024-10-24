@@ -17,7 +17,6 @@ suppressPackageStartupMessages({
   library(scales)
   library(readxl)
   library(plotrix)
-  library(shinyhelper)
   library(visNetwork)
   library(RColorBrewer)
   library(stringr)
