@@ -257,7 +257,7 @@ server <- function(input, output, session) {
     # Import the table with the genotype information added
     table <- moves_table_with_samplings()[[1]]
     all_IPP <- moves_table_with_samplings()[[2]]
-    
+
     # Filter the tables with the selected genotype
     table <- table[grep(input$genotypePicker, table$Génotype),]
     all_IPP <- all_IPP[grep(input$genotypePicker, all_IPP$GENOTYPE),]
@@ -297,14 +297,16 @@ server <- function(input, output, session) {
   data_filtered_table <- reactive({
     
     data_table <- table_with_updates()
-    
-    # Filter by date
-    data_table <- filter_by_date(table = data_table,
-                                 start = as.POSIXct(input$DateRange[1]), 
-                                 end = as.POSIXct(input$DateRange[2]))
-    
-    # Filter by patient 
-    data_table <- data_table[which(data_table$IPP %in% input$patientPicker),]
+
+    if (nrow(data_table) > 0){
+      # Filter by date
+      data_table <- filter_by_date(table = data_table,
+                                   start = as.POSIXct(input$DateRange[1]), 
+                                   end = as.POSIXct(input$DateRange[2]))
+      
+      # Filter by patient 
+      data_table <- data_table[which(data_table$IPP %in% input$patientPicker),]
+    }
     
     return(data_table)
   })
@@ -313,7 +315,7 @@ server <- function(input, output, session) {
   final_table <- reactive({
     
     table <- data_filtered_table()
-    
+
     # Replace short moves if requested
     if (input$shortMovesCheckbox){
       table <- replace_short_moves(table, input$shortMovesThreshold)
@@ -352,7 +354,7 @@ server <- function(input, output, session) {
     
     # Load final moves table
     table <- as.data.frame(final_table())
-    
+
     # Calculate statistics depending on sampling data
     if (is.null(input$Data_sampling)) {
       summary_table <- summary_table(table, NULL)
