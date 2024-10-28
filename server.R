@@ -532,7 +532,7 @@ server <- function(input, output, session) {
     # If moves have been loaded, at least and is not null
     if (is.null(input$Data_mouvements)) {
       return(NULL)
-    } else if (is.null(moves_table())){
+    }  else if(nrow(final_table()) < 1){
       return(NULL)
     }
     
@@ -546,9 +546,12 @@ server <- function(input, output, session) {
   
   # Display network
   output$network <- renderVisNetwork({
-    if (is.null(moves_table())){
+    if (is.null(input$Data_mouvements)) {
+      return(NULL)
+    }  else if(nrow(final_table()) < 1){
       return(NULL)
     }
+    
     network_plot()})
   
   # Display moves table
