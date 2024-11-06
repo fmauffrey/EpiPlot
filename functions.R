@@ -1,59 +1,36 @@
-add_genotype <- function(session, moves_table, samplings_table){
-  # Add genotype to each IPP
+tables_per_genotype <- function(session, moves_table, samplings_table){
+  # Create a list of tables for each genotype
   
   # Add genotype column and create the final table
   complete_table <- moves_table %>%
     mutate(Génotype = "Aucun")
   
-  # Process genotypes for each IPP
-  genotype_data <- samplings_table %>%
-    group_by(IPP) %>%
-    summarize(Génotype = paste(sort(unique(unlist(str_split(CLUSTER, ", ")))), collapse = ", ")) %>%
-    ungroup()
+  # Create list for storing table and genotype picker
+  tables_list <- list()
+  genotype_id <- list()
+  IPP_list <- list()
   
-  # Merge the genotype information into the complete_table
-  complete_table <- complete_table %>%
-    left_join(genotype_data, by = "IPP") %>%
-    mutate(Génotype = coalesce(Génotype.y, Génotype.x)) %>%
-    select(-Génotype.x, -Génotype.y) %>%
-    mutate(IPP = as.factor(IPP))
-  
-  # Add missing IPP as levels in the moves table
-  IPP_no_moves <- setdiff(unique(samplings_table$IPP), unique(moves_table$IPP))
-  new_levels <- c(levels(complete_table$IPP), IPP_no_moves)
-  complete_table$IPP <- factor(complete_table$IPP, levels=new_levels)
-  
-  # Create dataframe with all IPP and genotype only
-  IPP_no_moves_uniques <- samplings_table %>%
-    rename(CLUSTER = "GENOTYPE") %>%
-    select(IPP, GENOTYPE) %>%
-    dplyr::distinct(IPP, .keep_all = T)
-  
-  IPP_with_moves_uniques <- complete_table %>%
-    rename(Génotype = "GENOTYPE") %>%
-    select(IPP, GENOTYPE) %>%
-    dplyr::distinct(IPP, .keep_all = T)
-  
-  all_IPP_and_genotpye <- rbind.data.frame(IPP_with_moves_uniques, IPP_no_moves_uniques) %>%
-    dplyr::distinct(IPP, .keep_all = T)
-  
-  # Return a table with the count of each DLST
-  GENOTYPE_count <- table(gsub(" ", "", unlist(strsplit(all_IPP_and_genotpye$GENOTYPE, ","))))
-  GENOTYPE_count <- as.data.frame(GENOTYPE_count)
-  colnames(GENOTYPE_count) <- c("GENOTYPE", "Count")
-  
-  # Create variables for the picker
-  genotype_id <- GENOTYPE_count$GENOTYPE
-  names(genotype_id) <- paste0(GENOTYPE_count$GENOTYPE, " (", GENOTYPE_count$Count ,")")
+  # Build the different lists
+  all_genotypes <- unlist(str_split(levels(factor(samplings_table$CLUSTER)), ", "))
+  for (gen in all_genotypes){
+    filt_IPP <- samplings_table[grep(gen,samplings_table$CLUSTER), "IPP"]
+    filt_moves <- moves_table %>%
+      filter(IPP %in% filt_IPP) %>%
+      mutate(Génotype = gen)
+    tables_list[[paste(gen)]] <- filt_moves
+    
+    genotype_id[[paste0(gen, " (", length(unique(filt_IPP)) ,")")]] <- gen
+    
+    IPP_list[[paste(gen)]] <- unique(filt_IPP)
+  }
   
   # Update genotype picker widget
   updatePickerInput(session, "genotypePicker", 
                     choices = genotype_id,
-                    selected = genotype_id[1],
+                    selected = genotype_id[[1]],
                     choicesOpt = list(style = rep("color:black;", length(genotype_id))))
   
-  # Return the complete table and table of all IPP and their genotype
-  return(list(complete_table,all_IPP_and_genotpye))
+  return(list(tables_list, IPP_list))
 }
 
 check_moves_table <- function(input_file){

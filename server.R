@@ -238,8 +238,8 @@ server <- function(input, output, session) {
     samplings_table <- samplings_table()
 
     # Add genotype column and create the final table and update genotype picker
-    complete_table <-add_genotype(session, moves_table, samplings_table)[[1]]
-    all_IPP <-add_genotype(session, moves_table, samplings_table)[[2]]
+    tables_list <- tables_per_genotype(session, moves_table, samplings_table)[[1]]
+    IPP_list <- tables_per_genotype(session, moves_table, samplings_table)[[2]]
 
     # Add the sampling ordering choice in sorting widget
     updateSelectInput(session, "ganttOrder",
@@ -248,21 +248,21 @@ server <- function(input, output, session) {
                                      "IPP" = "IPP"),
                       selected = "Prelevements")
 
-    return(list(complete_table, all_IPP))
+    return(list(tables_list, IPP_list))
   })
   
   # Generate the genotype filtered table ######################################
   genotype_filtered_table <- reactive({
     
     # Import the table with the genotype information added
-    table <- moves_table_with_samplings()[[1]]
-    all_IPP <- moves_table_with_samplings()[[2]]
+    tables_list <- moves_table_with_samplings()[[1]]
+    IPP_list <- moves_table_with_samplings()[[2]]
 
     # Filter the tables with the selected genotype
-    table <- table[grep(input$genotypePicker, table$Génotype),]
-    all_IPP <- all_IPP[grep(input$genotypePicker, all_IPP$GENOTYPE),]
+    selected_table <- tables_list[[input$genotypePicker]]
+    selected_IPP <- IPP_list[[input$genotypePicker]]
     
-    return(list(table, all_IPP))
+    return(list(selected_table, selected_IPP))
   })
 
   # Update date and patients based on table and return final table ############
@@ -280,7 +280,7 @@ server <- function(input, output, session) {
       IPP_list <- unique(table$IPP)
     } else {
       table <- as.data.frame(genotype_filtered_table()[[1]])
-      IPP_list <- unique(genotype_filtered_table()[[2]]$IPP)
+      IPP_list <- genotype_filtered_table()[[2]]
       samplings <- samplings_table()
     }
     
