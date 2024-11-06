@@ -253,14 +253,20 @@ server <- function(input, output, session) {
   
   # Generate the genotype filtered table ######################################
   genotype_filtered_table <- reactive({
-    
+
     # Import the table with the genotype information added
     tables_list <- moves_table_with_samplings()[[1]]
     IPP_list <- moves_table_with_samplings()[[2]]
 
+    # Default selection for preventing an error during first iteration
+    selected_table <- tables_list[[1]]
+    selected_IPP <- IPP_list[[1]]
+
     # Filter the tables with the selected genotype
-    selected_table <- tables_list[[input$genotypePicker]]
-    selected_IPP <- IPP_list[[input$genotypePicker]]
+    if (input$genotypePicker != ""){
+      selected_table <- tables_list[[input$genotypePicker]]
+      selected_IPP <- IPP_list[[input$genotypePicker]]
+    }
     
     return(list(selected_table, selected_IPP))
   })
