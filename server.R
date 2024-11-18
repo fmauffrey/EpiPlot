@@ -4,18 +4,6 @@ server <- function(input, output, session) {
   # Options ###################################################################
   # Change maximum file size allowed by FileInput
   options(shiny.maxRequestSize=30*1024^2)
-
-  # Authentication part #######################################################
-  # call the server part
-  # check_credentials returns a function to authenticate users
-  res_auth <- secure_server(
-    timeout = 120,
-    check_credentials = check_credentials(credentials)
-  )
-  
-  output$auth_output <- renderPrint({
-    reactiveValuesToList(res_auth)
-  })
   
   # Initial variables and events ##############################################
   
