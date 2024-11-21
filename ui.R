@@ -64,11 +64,11 @@ dashboardPage(skin = "blue",
                   
                   # Parameters settings
                   menuItem("Paramètres", icon = icon("gears"),
+                           pickerInput("genotypePicker", "Génotype", choices = "",
+                                       options = pickerOptions(title = "Aucune sélection", size = 10, liveSearch = T)),
                            dateRangeInput("DateRange", "Dates", language = "fr-CH", weekstart = 1, separator = "à", format = "dd-mm-yyyy"),
                            fluidRow(column(6, actionBttn("bttnDateFilter365", "Dernière année", style = "simple", color = "primary", size = "xs"),
                                            actionBttn("bttnDateFilterReset", "Reset", style = "simple", color = "primary", size = "xs"))),
-                           pickerInput("genotypePicker", "Génotype", choices = "",
-                                       options = pickerOptions(title = "Aucune sélection", size = 10, liveSearch = T)),
                            pickerInput("patientPicker", "Patients", choices = "",
                                        multiple = TRUE, options = pickerOptions(title = "Aucune sélection", size = 10, actionsBox = T)),
                            selectInput("selectedUnit", "Niveau", list("Unité de soins" = "Unité_de_soins",
