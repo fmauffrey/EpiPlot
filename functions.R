@@ -105,6 +105,33 @@ check_samplings_table <- function(input_file){
   return("OK")
 }
 
+create_colors_palette <- function(table, predefined_colors){
+  # Generate the colors for all levels for the loaded table
+  
+  colors_palette <- list()
+  for (unit in c("Département", "Service", 
+                 "Unité_fonctionelle", "Unité_de_soins")){
+    
+    colors <- c()
+    
+    units <- table %>%
+      pull(unit) %>%
+      levels()
+    
+    if (length(units) <= 15){
+      colors <- predefined_colors[1:length(units)]
+    } else {
+      colors <- hue_pal()(length(units))
+    }
+    
+    names(colors) <- units
+    
+    colors_palette[[unit]] <- colors
+  }
+  
+  return(colors_palette)
+}
+
 filter_by_date <- function(table, start, end){
   # Filter the table by date and truncate moves if needed
   moves_to_remove <- c()
@@ -267,22 +294,20 @@ generate_network_data <- function(time_unit, detailed_button, table,
     net_edges$to <- match(net_edges$to, net_nodes$label, nomatch = 0)
     
     # Create dataframe for the legend
-    all_colors_levels <- levels(data[,network_unit])
-    edge_colors_code <- match(net_edges$color, all_colors_levels)
-    edges_colors <- data.frame(color=colors_vector[edge_colors_code],
+    edges_colors <- data.frame(color=colors_vector[net_edges$color],
                                label=net_edges$color)
     edges_colors <- edges_colors[!duplicated(edges_colors$color),]
     edges_colors$width <- rep(10, nrow(edges_colors))
     edges_colors$font.background <- rep("#ffffff", nrow(edges_colors))
     edges_colors$arrows <- rep("NULL", nrow(edges_colors))
-    
+
     # Add custom characteristics to edges
     net_edges$width <- rescale(as.numeric(net_edges$label), c(2, 20))
     net_edges$length <- rep(length_edges, nrow(net_edges))
     net_edges$color.color <- rep("#818281", nrow(net_edges))
     net_edges$font.size <- rep(size_font_edges, nrow(net_edges))
     net_edges$font.background <- rep("#ffffff", nrow(net_edges))
-    net_edges$color <- colors_vector[edge_colors_code]
+    net_edges$color <- colors_vector[net_edges$color]
     net_edges$dashes <- rep(FALSE, nrow(net_edges))
     
     if (length(net_edges$label=="0") > 0){

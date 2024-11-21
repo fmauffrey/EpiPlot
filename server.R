@@ -7,6 +7,9 @@ server <- function(input, output, session) {
   
   # Initial variables and events ##############################################
   
+  # Initiate the colors palette object
+  colors_palette <- reactiveValues()
+  
   # Disable samplings table loading widget and report generation button
   disable("Data_sampling")
   disable("generate_report_button_bttn") # _bttn must be added for shinyWidget downloadBttn
@@ -200,6 +203,9 @@ server <- function(input, output, session) {
   
     # Replace end date for stays without end date
     table <- replace_no_end(table)
+    
+    # Define the colors of all levels
+    colors_palette$palette <- create_colors_palette(table, predefined_colors)
 
     return(table)
   })
@@ -393,14 +399,9 @@ server <- function(input, output, session) {
       ggtitle(paste0(input$genotypePicker, " | ", 
                      format(input$DateRange[1], "%d-%m-%Y"), " à ", 
                      format(input$DateRange[2], "%d-%m-%Y"))) + 
-      guides(color=guide_legend(title=gsub("_", " ", input$selectedUnit)))
-    
-    # Change colors if 15 categories or less
-    selected_level <- factor(plot_data[,input$selectedUnit])
-    if (length(levels(selected_level)) <= 15){
-      plot <- plot + scale_color_manual(values = colors_vector[1:length(levels(selected_level))])
-    }
-    
+      guides(color=guide_legend(title=gsub("_", " ", input$selectedUnit))) +
+      scale_color_manual(values = colors_palette$palette[[input$selectedUnit]])
+
     # Add sampling points if set
     if (!is.null(input$Data_sampling)){
       if (!is.null(samplings_table())){
@@ -477,18 +478,14 @@ server <- function(input, output, session) {
     # Import table
     table <- final_table()
     number_units <- length(levels(factor(table[,input$selectedUnit])))
-
-    # Define colors depending on the number of different units
-    if (number_units <= 15){
-      network_colors <- colors_vector
-    } else {
-      network_colors <- hue_pal()(number_units)
-    }
     
+    # Define colors vector
+    colors_vector <- colors_palette$palette[[input$selectedUnit]]
+
     network_data <- generate_network_data(time_unit = "hour",
                                           table = table,
                                           network_unit = input$selectedUnit,
-                                          colors_vector = network_colors)
+                                          colors_vector = colors_vector)
 
     # Save the nodes information in the reactive value
     network_nodes(as.data.frame(network_data[[1]]))
