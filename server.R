@@ -372,7 +372,7 @@ server <- function(input, output, session) {
 
     # Import filtered data 
     plot_data <- as.data.frame(final_table())
-    
+
     # Order IPP according of user choice
     plot_data <- order_plot_data(plot_data=plot_data,
                                  samplings_data=sampling_data_plot(),

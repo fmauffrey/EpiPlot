@@ -386,7 +386,7 @@ order_plot_data <- function(plot_data, samplings_data, user_choice){
       dplyr::distinct()
     
     # Check if patients have moves but no positive sample
-    no_pos <- setdiff(levels(as.factor(plot_data$IPP)), levels(as.factor(samplings_data$IPP)))
+    no_pos <- setdiff(levels(as.factor(plot_data$IPP)), levels(as.factor(sample_table_first_pos$IPP)))
     
     # Create the new order (adding patients with no positive sample)
     new_order <- c(sample_table_first_pos$IPP[order(sample_table_first_pos$DATE_PRELEVEMENT)], no_pos)
