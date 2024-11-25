@@ -13,8 +13,10 @@ L'installation des librairies nécessaires se fait à l'aide du script install_p
 Rscript install_packages.R
 ```
 
-Il est également possible d'ouvrir le script dans Rstudio et d'exécuter chaque ligne.  
+Il est également possible d'ouvrir le script dans Rstudio et d'exécuter chaque ligne.
 
-## Exemples
+## Test de l'application
 
-Un fichier de mouvements et un fichier de prélèvements sont disponibles afin de tester l'application (Mouvements_exemple.xlsx et Prelevements_exemple.xlsx)
+Un fichier de mouvements et un fichier de prélèvements sont disponibles afin de tester l'application dans le repertoire *Exemples*.\
+Utilisez ces fichiers comme modèle afin de formater vos fichiers.\
+Un tutoriel détaillé est disponible sur le site <https://www.hpci.ch/>.
