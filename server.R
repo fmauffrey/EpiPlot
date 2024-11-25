@@ -124,16 +124,12 @@ server <- function(input, output, session) {
       number_units <- length(levels(factor(table[,input$selectedUnit])))
       
       # Define colors depending on the number of different units
-      if (number_units <= 15){
-        network_colors <- colors_vector
-      } else {
-        network_colors <- hue_pal()(number_units)
-      }
+      colors_vector <- colors_palette$palette[[input$selectedUnit]]
       
       network_data <- generate_network_data(time_unit = "hour",
                                             table = table,
                                             network_unit = input$selectedUnit,
-                                            colors_vector = network_colors,
+                                            colors_vector = colors_vector,
                                             indirect_time = input$IndirectLinkTime)
       
       visNetworkProxy("network") %>%
