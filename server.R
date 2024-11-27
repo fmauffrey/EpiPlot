@@ -199,9 +199,6 @@ server <- function(input, output, session) {
   
     # Replace end date for stays without end date
     table <- replace_no_end(table)
-    
-    # Define the colors of all levels
-    colors_palette$palette <- create_colors_palette(table, predefined_colors)
 
     return(table)
   })
@@ -257,7 +254,10 @@ server <- function(input, output, session) {
       selected_table <- tables_list[[input$genotypePicker]]
       selected_IPP <- IPP_list[[input$genotypePicker]]
     }
-    
+    print(selected_table)
+    # Define the colors of all levels
+    colors_palette$palette <- create_colors_palette(selected_table, predefined_colors)
+    print(colors_palette$palette)
     return(list(selected_table, selected_IPP))
   })
 

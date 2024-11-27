@@ -116,6 +116,7 @@ create_colors_palette <- function(table, predefined_colors){
     
     units <- table %>%
       pull(unit) %>%
+      droplevels() %>%
       levels()
     
     if (length(units) <= 15){
