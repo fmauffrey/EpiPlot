@@ -468,6 +468,28 @@ replace_short_moves <- function(table, threshold){
   return(as.data.frame(new_table))
 }
 
+string_to_color <- function(strings) {
+  # Generate unique hashes for each string
+  hashes <- sapply(strings, function(x) digest(x, algo = "md5", serialize = FALSE))
+  
+  # Convert hash to numeric values
+  nums <- sapply(hashes, function(h) {
+    # Take the first 6 characters (hex) and convert to decimal
+    as.numeric(strtoi(substr(h, 1, 6), 16L))
+  })
+  
+  # Normalize to a 0-1 range and generate RGB colors
+  colors <- rgb(
+    (nums %% 255) / 255,                  # Red channel
+    ((nums %/% 255) %% 255) / 255,        # Green channel
+    ((nums %/% (255 * 255)) %% 255) / 255 # Blue channel
+  )
+  
+  names(colors) <- strings
+  
+  return(colors)
+}
+
 summary_table <- function(moves_table, sampling_table){
   # Generate the statistics table display in the statistics tab
   

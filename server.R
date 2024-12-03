@@ -119,17 +119,19 @@ server <- function(input, output, session) {
 
     if (!is.null(input$Data_mouvements)){
       if (input$update_edges_button=="Avec"){
+      
       # Import table
       table <- final_table()
       number_units <- length(levels(factor(table[,input$selectedUnit])))
       
       # Define colors depending on the number of different units
-      colors_vector <- colors_palette$palette[[input$selectedUnit]]
+      colors_strings <- unique(as.character(table[,input$selectedUnit]))
+      plot_colors <- string_to_color(colors_strings)
       
       network_data <- generate_network_data(time_unit = "hour",
                                             table = table,
                                             network_unit = input$selectedUnit,
-                                            colors_vector = colors_vector,
+                                            colors_vector = plot_colors,
                                             indirect_time = input$IndirectLinkTime)
       
       visNetworkProxy("network") %>%
@@ -254,10 +256,7 @@ server <- function(input, output, session) {
       selected_table <- tables_list[[input$genotypePicker]]
       selected_IPP <- IPP_list[[input$genotypePicker]]
     }
-    print(selected_table)
-    # Define the colors of all levels
-    colors_palette$palette <- create_colors_palette(selected_table, predefined_colors)
-    print(colors_palette$palette)
+
     return(list(selected_table, selected_IPP))
   })
 
@@ -395,8 +394,12 @@ server <- function(input, output, session) {
       ggtitle(paste0(input$genotypePicker, " | ", 
                      format(input$DateRange[1], "%d-%m-%Y"), " à ", 
                      format(input$DateRange[2], "%d-%m-%Y"))) + 
-      guides(color=guide_legend(title=gsub("_", " ", input$selectedUnit))) +
-      scale_color_manual(values = colors_palette$palette[[input$selectedUnit]])
+      guides(color=guide_legend(title=gsub("_", " ", input$selectedUnit)))
+    
+    # Add colors
+    colors_strings <- unique(as.character(plot_data[,input$selectedUnit]))
+    plot_colors <- string_to_color(colors_strings)
+    plot <- plot + scale_color_manual(values = plot_colors)
 
     # Add sampling points if set
     if (!is.null(input$Data_sampling)){
@@ -476,12 +479,13 @@ server <- function(input, output, session) {
     number_units <- length(levels(factor(table[,input$selectedUnit])))
     
     # Define colors vector
-    colors_vector <- colors_palette$palette[[input$selectedUnit]]
+    colors_strings <- unique(as.character(table[,input$selectedUnit]))
+    plot_colors <- string_to_color(colors_strings)
 
     network_data <- generate_network_data(time_unit = "hour",
                                           table = table,
                                           network_unit = input$selectedUnit,
-                                          colors_vector = colors_vector)
+                                          colors_vector = plot_colors)
 
     # Save the nodes information in the reactive value
     network_nodes(as.data.frame(network_data[[1]]))
