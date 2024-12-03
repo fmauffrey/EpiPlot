@@ -13,6 +13,7 @@ server <- function(input, output, session) {
   # Disable samplings table loading widget and report generation button
   disable("Data_sampling")
   disable("generate_report_button_bttn") # _bttn must be added for shinyWidget downloadBttn
+  
   # Manual date range update buttons - Minus 365 days
   observeEvent(input$bttnDateFilter365, {
     if (!is.null(input$Data_mouvements)){
