@@ -105,34 +105,6 @@ check_samplings_table <- function(input_file){
   return("OK")
 }
 
-create_colors_palette <- function(table, predefined_colors){
-  # Generate the colors for all levels for the loaded table
-  
-  colors_palette <- list()
-  for (unit in c("Département", "Service", 
-                 "Unité_fonctionelle", "Unité_de_soins")){
-    
-    colors <- c()
-    
-    units <- table %>%
-      pull(unit) %>%
-      droplevels() %>%
-      levels()
-    
-    if (length(units) <= 15){
-      colors <- predefined_colors[1:length(units)]
-    } else {
-      colors <- hue_pal()(length(units))
-    }
-    
-    names(colors) <- units
-    
-    colors_palette[[unit]] <- colors
-  }
-  
-  return(colors_palette)
-}
-
 filter_by_date <- function(table, start, end){
   # Filter the table by date and truncate moves if needed
   moves_to_remove <- c()
