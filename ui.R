@@ -20,7 +20,6 @@ suppressPackageStartupMessages({
   library(RColorBrewer)
   library(stringr)
   library(IRanges)
-  library(shinymanager)
   library(shinyjs)
   library(rmarkdown)
   library(webshot)
