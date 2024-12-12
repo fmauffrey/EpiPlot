@@ -11,7 +11,6 @@ suppressPackageStartupMessages({
   library(plotly)
   library(shinycssloaders)
   library(lubridate)
-  library(GGally)
   library(network)
   library(sna)
   library(scales)

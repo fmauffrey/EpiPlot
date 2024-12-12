@@ -3,7 +3,7 @@ list.of.packages <- c(
   "svglite", "shinydashboard", "plotly", "shinycssloaders", "lubridate",
   "GGally", "network", "sna", "scales", "readxl", "plotrix", "visNetwork",
   "RColorBrewer", "stringr", "IRanges", "shinymanager", "shinyjs", 
-  "rmarkdown", "webshot", "tidyr", "here", "shinythemes", "BiocManager", "digest"
+  "rmarkdown", "webshot", "tidyr", "here", "shinythemes", "BiocManager", "digest",
 )
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
