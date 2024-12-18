@@ -172,6 +172,12 @@ format_samplings_table <- function(input_table_path){
                                   CLUSTER = as.character(CLUSTER)) %>%
                            filter(!is.na(DATE_PRELEVEMENT)))
   
+  # Set sampling time at 12:00:00 if no time given
+  table <- table %>%
+    mutate(DATE_PRELEVEMENT = if_else(format(DATE_PRELEVEMENT, "%H:%M:%S") == "00:00:00",
+                                      as.POSIXct(format(DATE_PRELEVEMENT, "%Y-%m-%d 12:00:00"), tz = attr(DATE_PRELEVEMENT, "tzone")),
+                                      as.POSIXct(DATE_PRELEVEMENT, tz = attr(DATE_PRELEVEMENT, "tzone"))))
+  
   return(table)
 }
 
