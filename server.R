@@ -209,9 +209,14 @@ server <- function(input, output, session) {
   # Load sampling data and format #############################################
   samplings_table <- reactive({
     
-    # Check if right file is loaded
+    # Check file and returns error message if problem
     req(input$Data_sampling)
-    if (is.null(check_samplings_table(input$Data_sampling))){
+    check_message <- check_samplings_table(input$Data_sampling)
+    if (check_message != "ok"){
+      show_alert(title="Erreur de fichier",
+                 type="error",
+                 closeOnClickOutside = T,
+                 text=check_message)
       return(NULL)
     }
     

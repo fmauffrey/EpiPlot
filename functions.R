@@ -76,33 +76,65 @@ check_samplings_table <- function(input_file){
   # Check extension
   ext <- tools::file_ext(input_file$name)
   if (!ext %in% c("xlsx", "xls")) {
-    show_alert(title="Erreur de chargement",
-               type="error",
-               closeOnClickOutside = T,
-               text="Mauvaise extension")
-    return(NULL)
+    message <- paste0("Le type de fichier est incorrect (", 
+                      ext,
+                      "). Fichiers acceptés : .xlsx, .xls.")
+    return(message)
   }
   
-  # Check data
-  samplings_table <- read_excel(input_file$datapath, skip = 1)
+  # Load table
+  samplings_table <- as.data.frame(read_excel(input_file$datapath))
   
+  # Check number of columns
   if (ncol(samplings_table) != 4){
-    show_alert(title="Erreur de chargement",
-               type="error",
-               closeOnClickOutside = T,
-               text=paste0("Fichier incorrect. Nombre de colonnes = ", ncol(samplings_table), " (Requis 4)"))
-    return(NULL)
+    message <- paste0("Le nombre de colonnes est incorrect ("
+                      , ncol(samplings_table), 
+                      "). Le nombre de colonnes attendu est 4.")
+    return(message)
   }
   
+  # Check number of rows
   if (nrow(samplings_table) == 0){
-    show_alert(title="Erreur de chargement",
-               type="error",
-               closeOnClickOutside = T,
-               text="Fichier incorrect. Aucune donnée.")
-    return(NULL)
+    message <- "Aucune donnée présente dans le fichier."
+    return(message)
   }
   
-  return("OK")
+  # Check sample sampling type
+  sampling_types <- levels(factor(samplings_table[,2]))
+  incorrect_values <- setdiff(sampling_types, c("POSITIVE", "NEGATIVE"))
+  if (length(incorrect_values) > 0){
+    message <- paste0("Valeurs incorrectes pour les données de la colonne ", 
+                      colnames(samplings_table)[2],
+                      " : ", 
+                      paste0(incorrect_values, collapse = ", "),
+                      ". Valeurs acceptées : POSITIVE ou NEGATIVE.")
+    return(message)
+  }
+  
+  # Check missing values
+  col_with_na <- c()
+  for (n in colnames(samplings_table)[1:3]){
+    if (NA %in% samplings_table[,n]){
+      col_with_na <- c(col_with_na, n)
+    }
+  }
+  if (length(col_with_na) > 0){
+    message <- paste0("Des valeurs sont manquantes pour les données suivantes : ",
+                      paste0(col_with_na, collapse = ", "),
+                      ".")
+    return(message)
+  }
+
+  # Check samplings dates format
+  date_test <- try(as.Date(samplings_table$DATE), silent = T)
+  if (length(grep("Error", date_test)) > 0){
+    message <- paste0("Valeurs incorrectes pour les données de la colonne ", 
+                      colnames(samplings_table)[3],
+                      ". Valeurs acceptées : date au format JJ/MM/AAAA.")
+    return(message)
+  }
+
+  return("ok")
 }
 
 filter_by_date <- function(table, start, end){
