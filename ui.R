@@ -22,7 +22,7 @@ suppressPackageStartupMessages({
   library(IRanges)
   library(shinyjs)
   library(rmarkdown)
-  library(webshot)
+  library(webshot2)
   library(tidyr)
   library(here)
   library(shinythemes)
